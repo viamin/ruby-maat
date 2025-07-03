@@ -1,5 +1,3 @@
-[![Build Status](https://travis-ci.org/adamtornhill/code-maat.png)](https://travis-ci.org/adamtornhill/code-maat)
-
 # Code Maat
 
 Code Maat is a command line tool used to mine and analyze data from version-control systems (VCS).
@@ -14,6 +12,8 @@ Note that the analyses have evolved into [CodeScene](https://codescene.io/), whi
 [![CodeScene Code Health](https://codescene.io/projects/87/status-badges/code-health)](https://codescene.io/projects/6410/jobs/latest-successful/results)
 
 [![CodeScene System Mastery](https://codescene.io/projects/87/status-badges/system-mastery)](https://codescene.io/projects/6410/jobs/latest-successful/results)
+
+Code Health badges via CodeScene's [free community edition](https://codescene.com/product/codescene-for-open-source).
 
 ## The ideas behind Code Maat
 
@@ -62,6 +62,11 @@ To analyze our VCS data we need to define a temporal period of interest. Over ti
 + *svn:* Use the `-r` option to specify a range of interest, for example `-r {20130820}:HEAD`.
 + *p4:* Use the `-m` option to specify the last specified number of changelists, for example `-m 1000`.
 + *tfs:* Use the `/stopafter` option to specify the number of changesets, for example `/stopafter:1000`
+
+#### ⚠️ Windows user? Use GitBASH when interacting with Code Maat
+
+Code Maat expects its Git logs to have UNIX line endings. If you're on windows, then the simplest solution
+is to interact with Git through a Git BASH shell that emulates a Linux environment. The Git BASH shell is distributed together with Git itself.
 
 #### Generate a Subversion log file using the following command:
 
