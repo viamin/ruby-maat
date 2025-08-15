@@ -1,4 +1,4 @@
-FROM clojure:alpine
+FROM clojure:latest
 VOLUME /data
 LABEL description="code-maat docker image."
 

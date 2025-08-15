@@ -1,0 +1,130 @@
+# frozen_string_literal: true
+
+module RubyMaat
+  module Analysis
+    # Logical coupling analysis - finds modules that tend to change together
+    # This identifies hidden dependencies between code modules
+    class LogicalCoupling < BaseAnalysis
+      def analyze(dataset, options = {})
+        min_revs = options[:min_revs] || 5
+        min_shared_revs = options[:min_shared_revs] || 5
+        min_coupling = options[:min_coupling] || 30
+        max_coupling = options[:max_coupling] || 100
+        max_changeset_size = options[:max_changeset_size] || 30
+        verbose_results = options[:verbose_results] || false
+
+        # Get co-changing entities by revision
+        co_changing_entities = get_co_changing_entities(dataset, max_changeset_size)
+
+        # Calculate coupling frequencies
+        coupling_frequencies = calculate_coupling_frequencies(co_changing_entities)
+
+        # Calculate revision counts per entity
+        entity_revisions = calculate_entity_revisions(co_changing_entities)
+
+        # Generate coupling results
+        results = []
+
+        coupling_frequencies.each do |(entity1, entity2), shared_revs|
+          entity1_revs = entity_revisions[entity1] || 0
+          entity2_revs = entity_revisions[entity2] || 0
+
+          avg_revs = average(entity1_revs, entity2_revs)
+          coupling_degree = percentage(shared_revs, avg_revs)
+
+          # Apply thresholds
+          next unless avg_revs >= min_revs
+          next unless shared_revs >= min_shared_revs
+          next unless coupling_degree >= min_coupling
+          next unless coupling_degree <= max_coupling
+
+          result = {
+            entity: entity1,
+            coupled: entity2,
+            degree: coupling_degree,
+            average_revs: avg_revs.ceil
+          }
+
+          if verbose_results
+            result.merge!(
+              first_entity_revisions: entity1_revs,
+              second_entity_revisions: entity2_revs,
+              shared_revisions: shared_revs
+            )
+          end
+
+          results << result
+        end
+
+        # Sort by coupling degree (descending), then by average revisions (descending)
+        results.sort! do |a, b|
+          comparison = b[:degree] <=> a[:degree]
+          comparison.zero? ? b[:average_revs] <=> a[:average_revs] : comparison
+        end
+
+        columns = %i[entity coupled degree average_revs]
+        columns += %i[first_entity_revisions second_entity_revisions shared_revisions] if verbose_results
+
+        to_csv_data(results, columns)
+      end
+
+      private
+
+      def get_co_changing_entities(dataset, max_changeset_size)
+        # Group changes by revision to find entities that changed together
+        by_revision = {}
+
+        dataset.to_df.each_row do |row|
+          revision = row[:revision]
+          entity = row[:entity]
+
+          by_revision[revision] ||= []
+          by_revision[revision] << entity
+        end
+
+        # Convert to co-changing pairs, filtering by changeset size
+        co_changing = []
+
+        by_revision.each_value do |entities|
+          # Skip large changesets to avoid noise
+          next if entities.size > max_changeset_size
+
+          # Get unique entities (remove duplicates)
+          unique_entities = entities.uniq
+
+          # Generate all combinations of 2 entities
+          unique_entities.combination(2) do |entity1, entity2|
+            # Sort to ensure consistent ordering
+            pair = [entity1, entity2].sort
+            co_changing << pair
+          end
+        end
+
+        co_changing
+      end
+
+      def calculate_coupling_frequencies(co_changing_entities)
+        # Count how many times each pair changed together
+        frequencies = Hash.new(0)
+
+        co_changing_entities.each do |pair|
+          frequencies[pair] += 1
+        end
+
+        frequencies
+      end
+
+      def calculate_entity_revisions(co_changing_entities)
+        # Count total revisions per entity
+        revisions = Hash.new(0)
+
+        co_changing_entities.each do |entity1, entity2|
+          revisions[entity1] += 1
+          revisions[entity2] += 1
+        end
+
+        revisions
+      end
+    end
+  end
+end

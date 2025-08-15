@@ -1,5 +1,4 @@
 /target
-/lib
 /classes
 /checkouts
 pom.xml
@@ -19,3 +18,4 @@ test_data.txt
 .idea/
 *.iml
 .nrepl-port
+.rspec_status
