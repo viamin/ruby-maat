@@ -12,6 +12,7 @@ Ruby Maat was developed to accompany the discussions in the books [Your Code as 
 ## Drop-in Replacement
 
 Ruby Maat is designed as a **drop-in replacement** for Code Maat. It supports:
+
 - ✅ Identical command-line arguments
 - ✅ Same VCS log file formats  
 - ✅ Compatible CSV output format
@@ -128,6 +129,7 @@ svn log -v --xml > logfile.log -r {YYYYmmDD}:HEAD
 ### Other VCS Systems
 
 Ruby Maat supports the same log formats as Code Maat for:
+
 - Mercurial (`hg`)
 - Perforce (`p4`)
 - Team Foundation Server (`tfs`)
@@ -159,10 +161,13 @@ See the [original documentation](https://github.com/adamtornhill/code-maat#gener
 ## Examples
 
 ### Authors Analysis
+
 ```bash
 ruby-maat -l git.log -c git2 -a authors
 ```
+
 Output:
+
 ```csv
 entity,n-authors,n-revs
 InfoUtils.java,12,60
@@ -171,10 +176,13 @@ Page.java,4,27
 ```
 
 ### Logical Coupling
+
 ```bash
 ruby-maat -l git.log -c git2 -a coupling
 ```
+
 Output:
+
 ```csv
 entity,coupled,degree,average-revs
 InfoUtils.java,Page.java,78,44
@@ -182,10 +190,13 @@ InfoUtils.java,BarChart.java,62,45
 ```
 
 ### Summary Statistics
+
 ```bash
 ruby-maat -l git.log -c git2 -a summary
 ```
+
 Output:
+
 ```csv
 statistic,value
 number-of-commits,919
@@ -238,12 +249,14 @@ ruby-maat -l git.log -c git2 -a coupling -t day
 While Ruby Maat is a drop-in replacement, there are some minor differences:
 
 ### Advantages
+
 - **Faster startup**: No JVM startup time
 - **Better memory efficiency**: Ruby's garbage collection
 - **Easier installation**: No Java dependencies
 - **Native Ruby integration**: Use as a library in Ruby projects
 
 ### Performance
+
 - Ruby Maat may be slightly slower on very large datasets
 - For most repositories, performance is comparable
 - Memory usage is typically lower than the JVM version
@@ -271,7 +284,7 @@ bundle exec rake build
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/viamin/ruby-maat.
+Bug reports and pull requests are welcome on GitHub at <https://github.com/viamin/ruby-maat>.
 
 ## License
 

@@ -9,6 +9,7 @@ Code Maat is a command-line tool for mining and analyzing data from version cont
 ## Build and Development Commands
 
 ### Building the Project
+
 ```bash
 # Build standalone JAR (primary method)
 lein uberjar
@@ -24,6 +25,7 @@ lein test
 ```
 
 ### Running Code Maat
+
 ```bash
 # Using standalone JAR
 java -jar code-maat-1.0.5-SNAPSHOT-standalone.jar -l logfile.log -c <vcs>
@@ -36,7 +38,9 @@ java -jar code-maat-1.0.5-SNAPSHOT-standalone.jar -h
 ```
 
 ### Memory Configuration
+
 Code Maat is memory-intensive. The project.clj includes these JVM options:
+
 - `-Xmx4g` (4GB heap)
 - `-Djava.awt.headless=true` (suppress AWT frames)
 - `-Xss512M` (512MB stack size)
@@ -76,7 +80,9 @@ Code Maat is memory-intensive. The project.clj includes these JVM options:
    - Filtering and row limiting
 
 ### Supported Analyses
+
 Available via the `-a` parameter (see `supported-analysis` map in `app.clj:55`):
+
 - `authors` - developer count per module
 - `coupling` - logical coupling between modules  
 - `revisions` - revision count per entity
@@ -87,6 +93,7 @@ Available via the `-a` parameter (see `supported-analysis` map in `app.clj:55`):
 - `effort` - developer effort distribution
 
 ### Data Flow
+
 1. Parse VCS log files into modification records
 2. Optional aggregation by architectural boundaries (grouping files)
 3. Optional temporal aggregation (group commits by time period)
@@ -96,6 +103,7 @@ Available via the `-a` parameter (see `supported-analysis` map in `app.clj:55`):
 7. Output results as CSV
 
 ### Key Dependencies
+
 - Clojure 1.8.0
 - Incanter (statistical computing)
 - clojure.tools.cli (command line parsing)
@@ -105,6 +113,7 @@ Available via the `-a` parameter (see `supported-analysis` map in `app.clj:55`):
 ## Testing
 
 Tests are located in `test/code_maat/` and follow the source structure. Key test categories:
+
 - Unit tests for individual analysis modules
 - End-to-end scenario tests with sample VCS data
 - Parser tests for different VCS formats

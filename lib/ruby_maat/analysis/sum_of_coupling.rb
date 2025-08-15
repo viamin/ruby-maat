@@ -10,7 +10,7 @@ module RubyMaat
         coupling_results = coupling_analysis.analyze(dataset, options)
 
         # If no coupling results, return empty
-        return to_csv_data([], %i[entity soc]) if coupling_results.none?
+        return to_csv_data([], %i[entity soc]) if coupling_results.empty?
 
         # Aggregate coupling degrees per entity
         entity_coupling_sums = Hash.new(0)

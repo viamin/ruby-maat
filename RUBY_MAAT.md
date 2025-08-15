@@ -9,6 +9,7 @@ Ruby Maat is a Ruby port of Code Maat, maintaining full backward compatibility w
 ## Build and Development Commands
 
 ### Setting Up Development Environment
+
 ```bash
 # Install dependencies
 bundle install
@@ -27,6 +28,7 @@ bundle exec rake
 ```
 
 ### Building and Installing
+
 ```bash
 # Build gem
 bundle exec rake build
@@ -39,6 +41,7 @@ bundle exec exe/ruby-maat --help
 ```
 
 ### Testing
+
 ```bash
 # Run all tests
 bundle exec rspec
@@ -68,7 +71,7 @@ bundle exec rspec --tag focus
    - Registry pattern for analysis selection
    - Error handling and recovery
 
-3. **Data Model** 
+3. **Data Model**
    - `ChangeRecord` - Immutable value object for VCS changes
    - `Dataset` - Wrapper around Rover DataFrame for domain operations
    - Clean separation between data structures and business logic
@@ -91,16 +94,19 @@ bundle exec rspec --tag focus
 ### Key Design Decisions
 
 **Rover DataFrame Integration:**
+
 - Replaces Incanter from original Clojure version
 - Provides statistical computing capabilities
 - Andrew Kane's excellent DataFrame library
 
 **Object-Oriented Architecture:**
+
 - Functional Clojure code translated to Ruby OOP
 - Strategy pattern for parsers and analyses
 - Immutable value objects where appropriate
 
 **Backward Compatibility:**
+
 - Identical CLI arguments and behavior
 - Same CSV output format
 - Compatible with existing scripts and workflows
@@ -110,18 +116,21 @@ bundle exec rspec --tag focus
 All analyses inherit from `BaseAnalysis` and implement `analyze(dataset, options)`:
 
 **Core Analyses:**
+
 - `Authors` - Developer count and revision metrics per entity
 - `LogicalCoupling` - Entities that change together
 - `Entities` - Basic revision counts
 - `Summary` - High-level repository statistics
 
 **Code Quality Analyses:**
+
 - `Churn::*` - Various code churn metrics
 - `Effort::*` - Developer effort and ownership patterns
 - `CodeAge` - Time since last modification
 - `SumOfCoupling` - Aggregated coupling metrics
 
 **Social Analyses:**
+
 - `Communication` - Developer collaboration patterns
 - `CommitMessages` - Commit message word frequency
 
@@ -135,15 +144,18 @@ All analyses inherit from `BaseAnalysis` and implement `analyze(dataset, options
 ### Ruby-Specific Patterns
 
 **Enumerable Usage:**
+
 - Heavy use of `map`, `filter`, `group_by`, `sort_by`
 - Functional programming style within OOP structure
 
 **Error Handling:**
+
 - Consistent error messages and recovery
 - Validation at boundaries (CLI, file parsing)
 - Meaningful error messages for users
 
 **Memory Efficiency:**
+
 - Streaming CSV output
 - Efficient data structures
 - Garbage collection friendly
@@ -151,17 +163,20 @@ All analyses inherit from `BaseAnalysis` and implement `analyze(dataset, options
 ## Testing Strategy
 
 **RSpec Structure:**
+
 - Unit tests for each class and module
 - Integration tests for end-to-end workflows
 - Test data using `ChangeRecord` factories
 
 **Key Test Areas:**
+
 - Parser accuracy for all VCS formats
 - Analysis algorithm correctness
 - CLI argument parsing and validation
 - Error handling and edge cases
 
 **Test Data:**
+
 - Small, focused datasets for unit tests
 - Real-world patterns for integration tests
 - Edge cases (empty files, malformed data, etc.)
@@ -169,17 +184,20 @@ All analyses inherit from `BaseAnalysis` and implement `analyze(dataset, options
 ## Development Guidelines
 
 **Code Style:**
+
 - Follow Ruby community conventions
 - Use RuboCop for consistency
 - Prefer explicit over implicit
 - Clear method and variable names
 
 **Performance:**
+
 - Profile with large datasets during development
 - Memory-conscious data structures
 - Efficient algorithms for coupling analysis
 
 **Compatibility:**
+
 - Maintain CLI compatibility religiously
 - Test against Code Maat output for regression
 - Document any behavioral differences
@@ -189,16 +207,19 @@ All analyses inherit from `BaseAnalysis` and implement `analyze(dataset, options
 Ruby Maat is designed to be a seamless replacement:
 
 **Input Compatibility:**
+
 - Accepts identical VCS log file formats
 - Same command-line arguments and flags
 - Compatible option parsing and validation
 
 **Output Compatibility:**
+
 - Identical CSV column names and formats
 - Same sorting and filtering behavior
 - Matching precision for numerical results
 
 **Feature Parity:**
+
 - All 23 analysis types implemented
 - Same grouping and mapping capabilities
 - Identical error messages where possible

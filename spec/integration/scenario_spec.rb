@@ -4,6 +4,7 @@ require "stringio"
 
 # Integration tests that verify ruby-maat produces output compatible with code-maat
 # These tests use the same input files as the original Clojure tests
+# rubocop:disable RSpec/DescribeClass
 RSpec.describe "Integration scenarios" do
   # Test data files from the original code-maat test suite
   let(:git2_log_file) { "./test/code_maat/end_to_end/simple_git2.txt" }
@@ -119,6 +120,7 @@ RSpec.describe "Integration scenarios" do
       # Test with stricter thresholds - should produce less or no output
       args = ["-l", git2_log_file, "-c", "git2", "-a", "coupling", "-n", "5", "-m", "5", "-i", "80"]
 
+      # rubocop:disable RSpec/ExpectOutput
       output = StringIO.new
       original_stdout = $stdout
       $stdout = output
@@ -129,6 +131,7 @@ RSpec.describe "Integration scenarios" do
       ensure
         $stdout = original_stdout
       end
+      # rubocop:enable RSpec/ExpectOutput
 
       result = output.string
       lines = result.strip.split("\n")
@@ -136,3 +139,4 @@ RSpec.describe "Integration scenarios" do
     end
   end
 end
+# rubocop:enable RSpec/DescribeClass

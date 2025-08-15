@@ -7,7 +7,7 @@ module RubyMaat
       def analyze(dataset, _options = {})
         df = dataset.to_df
 
-        if df.none?
+        if df.empty?
           results = [
             {statistic: "number-of-commits", value: 0},
             {statistic: "number-of-entities", value: 0},

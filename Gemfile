@@ -11,3 +11,7 @@ gem "rubocop", "~> 1.21"
 gem "rubocop-rake", require: false
 gem "rubocop-rspec", require: false
 gem "standard", ">= 1.35.1"
+
+# Security and coverage tools
+gem "bundler-audit", require: false
+gem "simplecov", require: false

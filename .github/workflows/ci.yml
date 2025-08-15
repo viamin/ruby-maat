@@ -1,0 +1,122 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        ruby: ['3.2', '3.3', '3.4']
+        include:
+          - os: windows-latest
+            ruby: '3.3'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Ruby
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: ${{ matrix.ruby }}
+        bundler-cache: true
+
+    - name: Run tests
+      run: bundle exec rspec
+
+    - name: Upload coverage reports
+      if: matrix.os == 'ubuntu-latest' && matrix.ruby == '3.3'
+      uses: codecov/codecov-action@v4
+      with:
+        files: ./coverage/.resultset.json
+        fail_ci_if_error: false
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Ruby
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: '3.3'
+        bundler-cache: true
+
+    - name: Run RuboCop
+      run: bundle exec rubocop
+
+    - name: Run StandardRB
+      run: bundle exec standardrb --no-fix
+
+  security:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Ruby
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: '3.3'
+        bundler-cache: true
+
+    - name: Run Bundler Audit
+      run: |
+        gem install bundler-audit
+        bundle audit --update
+
+  integration:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Ruby
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: '3.3'
+        bundler-cache: true
+
+    - name: Test CLI execution
+      run: |
+        bundle exec exe/ruby-maat --help
+        bundle exec exe/ruby-maat --version
+
+    - name: Test with sample data
+      run: |
+        # Test basic functionality with test data
+        bundle exec exe/ruby-maat -l test/code_maat/end_to_end/simple_git2.txt -c git2 -a authors -n 1
+        bundle exec exe/ruby-maat -l test/code_maat/end_to_end/simple_git2.txt -c git2 -a revisions -n 1
+        bundle exec exe/ruby-maat -l test/code_maat/end_to_end/simple_git2.txt -c git2 -a coupling -n 1 -m 1 -i 50
+
+  build:
+    runs-on: ubuntu-latest
+    needs: [test, lint, security, integration]
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Ruby
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: '3.3'
+        bundler-cache: true
+
+    - name: Build gem
+      run: gem build ruby-maat.gemspec
+
+    - name: Upload gem artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ruby-maat-gem
+        path: '*.gem'
+        retention-days: 30

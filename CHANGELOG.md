@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.0] - 2024-08-15
 
 ### Added
+
 - Initial Ruby port of Code Maat
 - Support for all VCS parsers: Git, Git2, SVN, Mercurial, Perforce, TFS
 - Complete analysis suite:
@@ -32,11 +33,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Rover DataFrame integration for statistical computing
 
 ### Changed
+
 - Ported from Clojure to Ruby while maintaining API compatibility
 - Replaced Incanter with Rover DataFrame for statistical operations
 - Converted from functional to object-oriented architecture
 
 ### Technical Notes
+
 - Drop-in replacement for original Code Maat
 - Identical command-line arguments and CSV output format
 - Improved memory efficiency through Ruby's garbage collection
