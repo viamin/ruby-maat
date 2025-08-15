@@ -1,18 +1,16 @@
+# Inherit StandardRB configuration
+inherit_gem:
+  standard: config/base.yml
+
+plugins:
+  - rubocop-rake
+  - rubocop-rspec
+
 AllCops:
   TargetRubyVersion: 3.2
   NewCops: enable
 
-Style/StringLiterals:
-  Enabled: true
-  EnforcedStyle: double_quotes
-
-Style/StringLiteralsInInterpolation:
-  Enabled: true
-  EnforcedStyle: double_quotes
-
-Layout/LineLength:
-  Max: 120
-
+# Project-specific overrides
 Metrics/MethodLength:
   Max: 30
 
@@ -38,3 +36,13 @@ Metrics/BlockLength:
   Exclude:
     - "spec/**/*"
     - "*.gemspec"
+
+# RSpec-specific configurations
+RSpec/ExampleLength:
+  Max: 30
+
+RSpec/MultipleExpectations:
+  Max: 25
+
+RSpec/NestedGroups:
+  Max: 5

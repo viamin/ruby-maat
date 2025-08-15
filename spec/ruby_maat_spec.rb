@@ -2,7 +2,7 @@
 
 RSpec.describe RubyMaat do
   it "has a version number" do
-    expect(RubyMaat::VERSION).not_to be nil
+    expect(RubyMaat::VERSION).not_to be_nil
     expect(RubyMaat::VERSION).to match(/\d+\.\d+\.\d+/)
   end
 
