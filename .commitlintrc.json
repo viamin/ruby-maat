@@ -1,0 +1,44 @@
+{
+  "extends": ["@commitlint/config-conventional"],
+  "rules": {
+    "type-enum": [
+      2,
+      "always",
+      [
+        "feat",
+        "fix",
+        "docs",
+        "style",
+        "refactor",
+        "perf",
+        "test",
+        "chore",
+        "ci",
+        "deps"
+      ]
+    ],
+    "scope-enum": [
+      2,
+      "always",
+      [
+        "analysis",
+        "parser",
+        "output",
+        "cli",
+        "dataset",
+        "grouper",
+        "core",
+        "deps",
+        "ci"
+      ]
+    ],
+    "scope-empty": [0, "never"],
+    "subject-case": [1, "always", "lower-case"],
+    "subject-empty": [1, "never"],
+    "subject-full-stop": [2, "never", "."],
+    "type-case": [1, "always", "lower-case"],
+    "type-empty": [1, "never"],
+    "header-max-length": [1, "always", 100],
+    "body-max-line-length": [1, "always", 100]
+  }
+}

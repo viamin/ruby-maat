@@ -1,0 +1,33 @@
+{
+  "packages": {
+    ".": {
+      "release-type": "ruby",
+      "package-name": "ruby-maat",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": true,
+      "draft": false,
+      "prerelease": false,
+      "version-file": "lib/ruby_maat/version.rb",
+      "changelog-sections": [
+        {"type": "feat", "section": "Features"},
+        {"type": "feature", "section": "Features"},
+        {"type": "fix", "section": "Bug Fixes"},
+        {"type": "perf", "section": "Performance Improvements"},
+        {"type": "deps", "section": "Dependencies"},
+        {"type": "ci", "section": "CI/CD"},
+        {"type": "docs", "section": "Documentation"},
+        {"type": "refactor", "section": "Refactoring", "hidden": false},
+        {"type": "test", "section": "Tests", "hidden": false},
+        {"type": "chore", "section": "Miscellaneous", "hidden": false},
+        {"type": "style", "section": "Code Style", "hidden": false}
+      ],
+      "extra-files": [
+        {
+          "type": "generic",
+          "path": "ruby-maat.gemspec",
+          "glob": "spec.version = \"*\""
+        }
+      ]
+    }
+  }
+}

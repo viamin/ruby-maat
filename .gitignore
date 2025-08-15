@@ -1,21 +1,48 @@
-/target
-/lib
-/classes
-/checkouts
-pom.xml
-*.jar
-*.class
-.lein-deps-sum
-.lein-failures
-.lein-plugins
-.lein*
+# Ruby/Gem specific
+*.gem
+*.rbc
+.bundle
+.config
+vendor/
+.yardoc
+Gemfile.lock
+InstalledFiles
+_yardoc
+doc/
+.sass-cache/
+.byebug_history
+
+# Test artifacts
+.rspec_status
+
+# Coverage reports
+coverage/
+.resultset.json
+
+# Development files
 *~
-mytodo.txt
-*.txt#
+*.tmp
 .#*
-*.clj#
-*.csv
-test_data.txt
+
+# IDE files
 .idea/
 *.iml
-.nrepl-port
+.vscode/
+
+# Output files
+*.csv
+test_data.txt
+
+# CI/CD artifacts
+.github-actions.yml.bak
+
+# macOS
+.DS_Store
+
+# Linux
+*~
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini

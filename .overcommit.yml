@@ -1,0 +1,77 @@
+# Ruby Maat Overcommit Configuration
+# See https://github.com/sds/overcommit for documentation
+
+# Verify signatures of committed configuration
+verify_signatures: false
+
+# Gemfile and Gemfile.lock consistency check
+gemfile: true
+
+PreCommit:
+  # General file checks
+  TrailingWhitespace:
+    enabled: true
+    exclude:
+      - '**/*.md'  # Markdown may intentionally have trailing spaces
+
+  EndOfFile:
+    enabled: true
+
+  YamlSyntax:
+    enabled: true
+
+  JsonSyntax:
+    enabled: true
+
+  # Ruby-specific checks
+  RuboCop:
+    enabled: true
+    command: ['bundle', 'exec', 'rubocop']
+    flags: ['--format', 'emacs', '--force-exclusion', '--display-cop-names']
+    on_warn: fail
+
+  # Use StandardRB instead of separate RuboCop config
+  StandardRb:
+    enabled: true
+    command: ['bundle', 'exec', 'standardrb']
+    flags: ['--no-fix']
+    on_warn: fail
+
+  # Run tests before committing
+  RSpec:
+    enabled: true
+    command: ['bundle', 'exec', 'rspec']
+    flags: ['--format', 'progress']
+    on_warn: fail
+
+  # Check for merge conflict markers
+  MergeConflicts:
+    enabled: true
+
+  # Check for large files (>500KB)
+  FileSize:
+    enabled: true
+    size_limit_bytes: 512000
+
+CommitMsg:
+  # Validate conventional commit format using Ruby script
+  ConventionalCommit:
+    enabled: true
+    command: ['bin/validate-commit-msg']
+    flags: []
+    on_warn: warn
+
+PostCommit:
+  # Optional: Show a success message
+  MessageDisplay:
+    enabled: false
+
+PostMerge:
+  # Bundle install if Gemfile changes
+  BundleInstall:
+    enabled: true
+
+PostRewrite:
+  # Bundle install if Gemfile changes during rebase
+  BundleInstall:
+    enabled: true

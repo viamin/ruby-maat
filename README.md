@@ -1,19 +1,53 @@
-# Code Maat
+# Ruby Maat
 
-Code Maat is a command line tool used to mine and analyze data from version-control systems (VCS).
+[![Gem Version](https://badge.fury.io/rb/ruby-maat.svg)](https://badge.fury.io/rb/ruby-maat)
+[![Build Status](https://github.com/viamin/ruby-maat/workflows/CI/badge.svg)](https://github.com/viamin/ruby-maat/actions)
 
-Code Maat was developed to accompany the discussions in my books [Your Code as a Crime Scene](https://pragprog.com/titles/atcrime/your-code-as-a-crime-scene) and
-[Software Design X-Rays](https://pragprog.com/titles/atevol/software-design-x-rays).
+Ruby Maat is a command line tool used to mine and analyze data from version-control systems (VCS). It's a Ruby port of the original [Code Maat](https://github.com/adamtornhill/code-maat) by Adam Tornhill.
 
-Note that the analyses have evolved into [CodeScene](https://codescene.io/), which automates all the analyses found in Code Maat and several new ones.
+Ruby Maat was developed to accompany the discussions in the books [Your Code as a Crime Scene](https://pragprog.com/titles/atcrime/your-code-as-a-crime-scene) and [Software Design X-Rays](https://pragprog.com/titles/atevol/software-design-x-rays).
 
-## Code Maat Maintainability
+**Note:** The analyses have evolved into [CodeScene](https://codescene.io/), which automates all the analyses found in Ruby Maat and several new ones.
 
-[![CodeScene Code Health](https://codescene.io/projects/87/status-badges/code-health)](https://codescene.io/projects/6410/jobs/latest-successful/results)
+## Drop-in Replacement for Code Maat
 
-[![CodeScene System Mastery](https://codescene.io/projects/87/status-badges/system-mastery)](https://codescene.io/projects/6410/jobs/latest-successful/results)
+Ruby Maat is designed as a **drop-in replacement** for the original Code Maat. It supports:
 
-Code Health badges via CodeScene's [free community edition](https://codescene.com/product/codescene-for-open-source).
+- ✅ Identical command-line arguments
+- ✅ Same VCS log file formats  
+- ✅ Compatible CSV output format
+- ✅ All original analysis types
+
+Simply replace `java -jar code-maat.jar` with `ruby-maat` in your existing scripts!
+
+## Installation
+
+### Via RubyGems (Recommended)
+
+```bash
+gem install ruby-maat
+```
+
+### Via Docker
+
+```bash
+docker build -t ruby-maat .
+docker run -v /path/to/your/logs:/data ruby-maat -l /data/logfile.log -c git2 -a summary
+```
+
+### From Source
+
+```bash
+git clone https://github.com/viamin/ruby-maat.git
+cd ruby-maat
+bundle install
+rake install
+```
+
+### Requirements
+
+- Ruby 3.2 or later
+- No external dependencies beyond the gem requirements
 
 ## The ideas behind Code Maat
 
@@ -31,54 +65,84 @@ Distributed under the [GNU General Public License v3.0](http://www.gnu.org/licen
 
 ## Usage
 
-Code Maat is written in Clojure. To build it from source, use [leiningen](https://github.com/technomancy/leiningen):
+### Basic Usage
 
-	   lein uberjar
+```bash
+# Analyze Git repository
+ruby-maat -l logfile.log -c git2 -a summary
 
-The command above will create a standalone `jar` containing all the dependencies.
+# With specific analysis
+ruby-maat -l logfile.log -c git2 -a coupling
 
-We also publish a pre-built executable JAR file as part of the [latest release](https://github.com/adamtornhill/code-maat/releases/tag/v1.0.2)
-that you can download and run directly.
+# Write to file
+ruby-maat -l logfile.log -c git2 -a authors -o results.csv
+```
 
-You can also build code-maat as a Docker image:
+### Command Line Options
 
-      docker build -t code-maat-app .
+When invoked with `-h`, Ruby Maat prints its usage:
 
-If this fails on your Apple Silicon change "clojure:alpine" to "clojure:latest" in the first line of the Dockerfile.
+```
+Usage: ruby-maat -l log-file -c vcs-type [options]
 
-Finally, if you want to use Code Maat as a library, then add the following line to your leiningen dependencies:
+Required:
+  -l, --log LOG                    Log file with input data
+  -c, --version-control VCS        Input vcs module type: supports svn, git, git2, hg, p4, or tfs
 
-	   [code-maat "1.0.1"]
+Analysis:
+  -a, --analysis ANALYSIS          The analysis to run (default: authors)
+                                   Available: abs-churn, age, author-churn, authors, communication, 
+                                   coupling, entity-churn, entity-effort, entity-ownership, 
+                                   fragmentation, identity, main-dev, main-dev-by-revs, messages, 
+                                   refactoring-main-dev, revisions, soc, summary
+
+Filtering:
+  -n, --min-revs MIN_REVS          Minimum number of revisions (default: 5)
+  -m, --min-shared-revs MIN_SHARED Minimum shared revisions (default: 5)
+  -i, --min-coupling MIN_COUPLING  Minimum coupling percentage (default: 30)
+  -x, --max-coupling MAX_COUPLING  Maximum coupling percentage (default: 100)
+  -s, --max-changeset-size SIZE    Maximum changeset size (default: 30)
+
+Output:
+  -r, --rows ROWS                  Max rows in output
+  -o, --outfile OUTFILE            Write the result to the given file name
+      --input-encoding ENCODING    Specify an encoding other than UTF-8 for the log file
+
+Other:
+  -h, --help                       Show this help message
+      --version                    Show version information
+```
 
 ### Generating input data
 
-Code Maat operates on log files from version-control systems. The supported version-control systems are `git`, Mercurial (`hg`), `svn`, Perforce (`p4`), and Team Foundation Server (`tfs`). The log files are generated by using the version-control systems themselves as described in the following sections.
+Ruby Maat operates on log files from version-control systems. **Use the exact same commands as the original Code Maat.** The supported version-control systems are `git`, Mercurial (`hg`), `svn`, Perforce (`p4`), and Team Foundation Server (`tfs`). The log files are generated by using the version-control systems themselves as described in the following sections.
 
 #### Preparations
 
-To analyze our VCS data we need to define a temporal period of interest. Over time, many design issues do get fixed and we don't want old data to interfere with our current analysis of the code. To limit the data Code Maat will consider, use one of the following flags depending on your version-control system:
-+ *git:* Use the `--after=<date>` to specify the last date of interest. The `<date>` is given as `YYYY-MM-DD`.
-+ *hg:* Use the `--date` switch to specify the last date of interest. The value is given as `">YYYY-MM-DD"`.
-+ *svn:* Use the `-r` option to specify a range of interest, for example `-r {20130820}:HEAD`.
-+ *p4:* Use the `-m` option to specify the last specified number of changelists, for example `-m 1000`.
-+ *tfs:* Use the `/stopafter` option to specify the number of changesets, for example `/stopafter:1000`
+To analyze our VCS data we need to define a temporal period of interest. Over time, many design issues do get fixed and we don't want old data to interfere with our current analysis of the code. To limit the data Ruby Maat will consider, use one of the following flags depending on your version-control system:
 
-#### ⚠️ Windows user? Use GitBASH when interacting with Code Maat
+- *git:* Use the `--after=<date>` to specify the last date of interest. The `<date>` is given as `YYYY-MM-DD`.
+- *hg:* Use the `--date` switch to specify the last date of interest. The value is given as `">YYYY-MM-DD"`.
+- *svn:* Use the `-r` option to specify a range of interest, for example `-r {20130820}:HEAD`.
+- *p4:* Use the `-m` option to specify the last specified number of changelists, for example `-m 1000`.
+- *tfs:* Use the `/stopafter` option to specify the number of changesets, for example `/stopafter:1000`
 
-Code Maat expects its Git logs to have UNIX line endings. If you're on windows, then the simplest solution
+#### ⚠️ Windows user? Use GitBASH when interacting with Ruby Maat
+
+Ruby Maat expects its Git logs to have UNIX line endings. If you're on windows, then the simplest solution
 is to interact with Git through a Git BASH shell that emulates a Linux environment. The Git BASH shell is distributed together with Git itself.
 
-#### Generate a Subversion log file using the following command:
+#### Generate a Subversion log file using the following command
 
           svn log -v --xml > logfile.log -r {YYYYmmDD}:HEAD
 
-#### Generate a git log file using the following command:
+#### Generate a git log file using the following command
 
-The first options is the legacy format used in Your Code As A Crime Scene. Use the `-c git` parse option when [Running Code Maat](#running-code-maat).
+The first options is the legacy format used in Your Code As A Crime Scene. Use the `-c git` parse option when running Ruby Maat.
 
           git log --pretty=format:'[%h] %aN %ad %s' --date=short --numstat --after=YYYY-MM-DD > logfile.log
 
-There's a second supported Git format as well. It's more tolerant and faster to parse, so please prefer it over the plain `git` format described above. Use the `-c git2` parse option when [Running Code Maat](#running-code-maat).
+There's a second supported Git format as well. It's more tolerant and faster to parse, so please prefer it over the plain `git` format described above. Use the `-c git2` parse option when running Ruby Maat.
 
           git log --all --numstat --date=short --pretty=format:'--%h--%ad--%aN' --no-renames --after=YYYY-MM-DD > logfile.log
 
@@ -92,69 +156,43 @@ To exclude multiple folders, you just append more pathspecs:
 
            -- . ":(exclude)vendor/" ":(exclude)test/"
 
-#### Generate a Mercurial log file using the following command:
+#### Generate a Mercurial log file using the following command
 
           hg log --template "rev: {rev} author: {author} date: {date|shortdate} files:\n{files %'{file}\n'}\n" --date ">YYYY-MM-DD"
 
-#### Generate a Perforce log file using the following command:
+#### Generate a Perforce log file using the following command
 
           p4 changes -s submitted -m 5000 //depot/project/... | cut -d ' ' -f 2 | xargs -I commitid -n1 sh -c 'p4 describe -s commitid | grep -v "^\s*$" && echo ""'
 
-#### Generate a TFS log file using the following command from a Developer command-prompt:
-###### Note:  The TFS CLI tool does not support custom date formatting.  The parser currently only supports the en-us default:  Friday, January 1, 2016 1:12:35 PM - you may need to adjust your system locale settings before using the following command.
+#### Generate a TFS log file using the following command from a Developer command-prompt
+
+###### Note:  The TFS CLI tool does not support custom date formatting.  The parser currently only supports the en-us default:  Friday, January 1, 2016 1:12:35 PM - you may need to adjust your system locale settings before using the following command
 
           tf hist /path/to/workspace /noprompt /format:detailed /recursive
 
-### Running Code Maat
+### Running Ruby Maat
 
-You can run Code Maat directly from leiningen:
+If you've installed the gem:
 
-    	  lein run -l logfile.log -c <vcs>
-
-If you've downloaded or built the standalone jar, then run it via java. Please note that you need at least Java 8 installed:
-
-     	  java -jar code-maat-1.0.4-standalone.jar -l logfile.log -c <vcs>
+       ruby-maat -l logfile.log -c <vcs>
 
 If you've built a docker container, then you can run it as
 
-        docker run -v /home/xx/src/code-maat:/data -it code-maat-app -l /data/logfile.log -c <vcs>
+        docker run -v /home/xx/src/logs:/data -it ruby-maat -l /data/logfile.log -c <vcs>
 
-where the /home/xx/src/code-maat is the host's directory containing the file logfile.log.
+where the /home/xx/src/logs is the host's directory containing the file logfile.log.
 
-When invoked with `-h`, Code Maat prints its usage:
-
-             adam$ java -jar code-maat-1.0.4-standalone.jar
-             This is Code Maat, a program used to collect statistics from a VCS.
-             Version: 1.0-SNAPSHOT
-
-             Usage: program-name -l log-file [options]
-
-             Options:
-               -l, --log LOG                                         Log file with input data
-               -c, --version-control VCS                             Input vcs module type: supports svn, git, git2, hg, p4, or tfs
-               -a, --analysis ANALYSIS                      authors  The analysis to run (abs-churn, age, author-churn, authors, communication, coupling, entity-churn, entity-effort, entity-ownership, fragmentation, identity, main-dev, main-dev-by-revs, messages, refactoring-main-dev, revisions, soc, summary)
-              --input-encoding INPUT-ENCODING                        Specify an encoding other than UTF-8 for the log file
-               -r, --rows ROWS                                       Max rows in output
-               -g, --group GROUP                                     A file with a pre-defined set of layers. The data will be aggregated according to the group of layers.
-               -n, --min-revs MIN-REVS                      5        Minimum number of revisions to include an entity in the analysis
-               -m, --min-shared-revs MIN-SHARED-REVS        5        Minimum number of shared revisions to include an entity in the analysis
-               -i, --min-coupling MIN-COUPLING              30       Minimum degree of coupling (in percentage) to consider
-               -x, --max-coupling MAX-COUPLING              100      Maximum degree of coupling (in percentage) to consider
-               -s, --max-changeset-size MAX-CHANGESET-SIZE  30       Maximum number of modules in a change set if it shall be included in a coupling analysis
-               -e, --expression-to-match MATCH-EXPRESSION            A regex to match against commit messages. Used with -messages analyses
-               -t, --temporal-period TEMPORAL-PERIOD                 Instructs Code Maat to consider all commits during the same day as a single, logical commit
-               -d, --age-time-now AGE-TIME_NOW                       Specify a date as YYYY-MM-dd that counts as time zero when doing a code age analysis
-               -h, --help
+When invoked with `-h`, Ruby Maat prints its usage. (See the [Command Line Options](#command-line-options) section above for details.)
 
 ### Optional: specify an encoding
 
-By default, Code Maat expects your log files to be UTF-8. If you use another encoding, override the default with `--input-encoding`, for example `--input-encoding UTF-16BE`.
+By default, Ruby Maat expects your log files to be UTF-8. If you use another encoding, override the default with `--input-encoding`, for example `--input-encoding UTF-16BE`.
 
 #### Generating a summary
 
-When starting out, I find it useful to get an overview of the mined data. With the `summary` analysis, Code Maat produces such an overview:
+When starting out, I find it useful to get an overview of the mined data. With the `summary` analysis, Ruby Maat produces such an overview:
 
-   	   java -jar code-maat-1.0.4-standalone.jar -l logfile.log -c git -a summary
+       ruby-maat -l logfile.log -c git -a summary
 
 The resulting output is on csv format:
 
@@ -166,13 +204,13 @@ The resulting output is on csv format:
 
 If you use the second Git format, just specify `git2` instead:
 
-   	   java -jar code-maat-1.0.4-standalone.jar -l logfile2.log -c git2 -a summary
+       ruby-maat -l logfile2.log -c git2 -a summary
 
 #### Mining organizational metrics
 
-By default, Code Maat runs an analysis on the number of authors per module. The authors analysis is based on the idea that the more developers working on a module, the larger the communication challenges. The analysis is invoked with the following command:
+By default, Ruby Maat runs an analysis on the number of authors per module. The authors analysis is based on the idea that the more developers working on a module, the larger the communication challenges. The analysis is invoked with the following command:
 
-   	   java -jar code-maat-1.0.4-standalone.jar -l logfile.log -c git
+       ruby-maat -l logfile.log -c git
 
 The resulting output is on CSV format:
 
@@ -186,9 +224,9 @@ In example above, the first column gives us the name of module, the second the t
 
 #### Mining logical coupling
 
-Logical coupling refers to modules that tend to change together. Modules that are logically coupled have a hidden, implicit dependency between them such that a change to one of them leads to a predictable change in the coupled module. To analyze the logical coupling in a system, invoke Code Maat with the following arguments:
+Logical coupling refers to modules that tend to change together. Modules that are logically coupled have a hidden, implicit dependency between them such that a change to one of them leads to a predictable change in the coupled module. To analyze the logical coupling in a system, invoke Ruby Maat with the following arguments:
 
-              java -jar code-maat-1.0.4-standalone.jar -l logfile.log -c git -a coupling
+              ruby-maat -l logfile.log -c git -a coupling
 
 The resulting output is on CSV format:
 
@@ -214,7 +252,7 @@ The change frequency of code is a factor that should (but rarely do) drive the e
 
 One way to measure the stability of a software architecture is by a code age analysis:
 
-              java -jar code-maat-1.0.4-standalone.jar -l logfile.log -c git -a age
+              ruby-maat -l logfile.log -c git -a age
 
 The `age` analysis grades each module based on the date of last change. The measurement unit is age in months. Here's how the result may look:
 
@@ -224,7 +262,7 @@ The `age` analysis grades each module based on the date of last change. The meas
               src/code_maat/parsers/perforce.clj,5
               ...
 
-By default, Code Maat uses the current date as starting point for a code age analysis. You specify a different start time with the command line argument `--age-time-now`.
+By default, Ruby Maat uses the current date as starting point for a code age analysis. You specify a different start time with the command line argument `--age-time-now`.
 
 By using the techniques from [Your Code as a Crime Scene](https://pragprog.com/book/atcrime/your-code-as-a-crime-scene) we visualize the system with each module marked-up by its age (the more `red`, the more recent changes to the code):
 
@@ -232,9 +270,9 @@ By using the techniques from [Your Code as a Crime Scene](https://pragprog.com/b
 
 ### Visualise your Results
 
-Code Maat doesn't include any visualizations itself. However, you do have a bunch of options.
+Ruby Maat doesn't include any visualizations itself. However, you do have a bunch of options.
 
-One option is [CodeScene](http://www.empear.com/#empear-products) which is [free for open source](https://codescene.io/) and delivers all these analyses as a service. CodeScene is also available in an [on-premise version](https://codescene.com/pricing). CodeScene is a complete application with automated repository mining, visualizations, and is built around the ideas prototyped in Code Maat.
+One option is [CodeScene](http://www.empear.com/#empear-products) which is [free for open source](https://codescene.io/) and delivers all these analyses as a service. CodeScene is also available in an [on-premise version](https://codescene.com/pricing). CodeScene is a complete application with automated repository mining, visualizations, and is built around the ideas prototyped in the original Code Maat.
 
 I also present a whole suite of different visualization techniques and options in [Your Code as a Crime Scene](https://pragprog.com/book/atcrime/your-code-as-a-crime-scene), so do check out the book if you want to dive deeper. You can also look at some of the basic tools I've open sourced such as [Metrics Tree Map](https://github.com/adamtornhill/MetricsTreeMap):
 
@@ -330,17 +368,124 @@ holistic whole by aggregating all file contributions for the matches.
 
 Code Maat supports an `identity` analysis. By using this switch, Code Maat will output the intermediate parse result of the raw VCS file. This can be useful either as a debug aid or as input to other tools.
 
-### JVM options
+### Ruby Maat Benefits
 
-Code Maat uses the Incanter library. By default, Incanter will create an `awt frame`. You can suppress the frame by providing the following option to your `java` command: `-Djava.awt.headless=true`.
-Code Maat is quite memory hungry, particularly when working with larger change sets. Thus, I recommend specifying a larger heap size than the `JVM` defaults: `-Xmx4g`.
-Note that when running Code Maat through [leiningen](https://github.com/technomancy/leiningen), those options are already configured in the `project.clj` file.
+Ruby Maat offers several advantages over the original Java/Clojure version:
+
+- **Faster startup**: No JVM startup time overhead
+- **Better memory efficiency**: Ruby's garbage collection typically uses less memory
+- **Easier installation**: No Java dependencies required  
+- **Native Ruby integration**: Can be used as a library in Ruby projects
+- **Simpler deployment**: Single gem installation vs JAR + Java dependencies
+
+For very large datasets, the original Java version may still have performance advantages, but for most repositories, Ruby Maat provides comparable performance with much better usability.
 
 ## Limitations
 
-The current version of Code Maat processes all its content in memory. Thus, it may not scale to large input files (however, it depends a lot on the combination of parser and analysis). The recommendation is to limit the input by specifying a sensible start date (as discussed initially, you want to do that anyway to avoid confounds in the analysis).
+Ruby Maat processes all its content in memory, which may not scale to very large input files. The recommendation is to limit the input by specifying a sensible start date using the VCS date filtering options (as discussed above, you want to do that anyway to avoid confounds in the analysis).
 
-## Future directions
+For extremely large repositories (>100k commits), the original Java/Clojure version may have better memory management, but Ruby Maat should handle most real-world repositories without issues.
 
-In future versions of Code Maat I plan to add more analysis methods such as code churn and developer patterns.
-I also plan on direct visualization support and a database backed analysis to allow processing of larger log files. Further, I plan to add a worked example. That example will be a case study of some well-known open source code. Until then, I hope you find Code Maat useful in its initial shape.
+### Windows Compatibility
+
+**Note for Windows users**: Ruby Maat currently has dependencies on native extensions (`numo-narray`) that may have compilation issues on Windows with certain Ruby versions. If you encounter installation problems:
+
+1. **Use WSL2** (Windows Subsystem for Linux) for the best experience
+2. **Use Docker** as an alternative: `docker run -v /path/to/logs:/data ruby-maat -l /data/logfile.log -c git2 -a summary`
+3. **Check the Issues page** for current workarounds and updates on Windows compatibility
+
+## Development
+
+### Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b my-new-feature`)
+3. **Set up git hooks** (recommended):
+
+   ```bash
+   # Install Overcommit git hooks (Ruby-native alternative to pre-commit)
+   bundle exec overcommit --install
+   
+   # Note: If you encounter Ruby 3.4 compatibility issues, you can:
+   # 1. Use Ruby 3.3 or earlier, or
+   # 2. Run quality checks manually: bundle exec rspec && bundle exec standardrb
+   ```
+
+4. Make your changes following the existing code style
+5. Add tests for your changes
+6. **Use conventional commit messages**:
+
+   ```text
+   feat: add new analysis type for code complexity
+   fix: resolve parsing issue with binary files
+   docs: update installation instructions
+   test: add integration tests for coupling analysis
+   ```
+
+7. Run the test suite (`bundle exec rspec`)
+8. Run the linter (`bundle exec standardrb`)
+9. Commit your changes (git hooks will run automatically)
+10. Push to the branch (`git push origin my-new-feature`)
+11. Create a new Pull Request
+
+#### Conventional Commit Format
+
+This project uses [Conventional Commits](https://www.conventionalcommits.org/) for automated versioning and changelog generation. **All new commits must follow this format**:
+
+```text
+<type>[optional scope]: <description>
+
+[optional body]
+
+[optional footer(s)]
+```
+
+**Types**: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `revert`
+
+**Scopes**: `analysis`, `parser`, `output`, `cli`, `dataset`, `grouper`, `core`, `deps`, `ci`
+
+**Examples**:
+
+- `feat(analysis): add new complexity analysis algorithm`
+- `fix(parser): handle binary files correctly in git2 parser`
+- `docs: update installation instructions for Windows users`
+- `test(integration): add end-to-end tests for coupling analysis`
+
+> **Note**: This project transitioned to conventional commits for Release Please automation. Historical commits may not follow this format, but all new contributions must use conventional commit messages.
+
+### Running Tests
+
+```bash
+# Run all tests
+bundle exec rspec
+
+# Run specific test file
+bundle exec rspec spec/ruby_maat/analysis/authors_spec.rb
+
+# Run with coverage
+bundle exec rspec --format documentation
+```
+
+### Code Style
+
+This project uses [StandardRB](https://github.com/testdouble/standard) for Ruby style enforcement:
+
+```bash
+# Check style
+bundle exec standardrb
+
+# Auto-fix style issues
+bundle exec standardrb --fix
+```
+
+## Acknowledgments
+
+Ruby Maat is a Ruby port of the original [Code Maat](https://github.com/adamtornhill/code-maat) by **Adam Tornhill**. The original Code Maat was written in Clojure and has been an invaluable tool for software archaeology and code analysis.
+
+Special thanks to Adam Tornhill for:
+
+- Creating the original Code Maat and pioneering these analysis techniques
+- Writing the foundational books "Your Code as a Crime Scene" and "Software Design X-Rays"
+- Developing CodeScene, which represents the evolution of these ideas into a comprehensive platform
+
+The Ruby port aims to make these powerful analysis techniques more accessible while maintaining full compatibility with the original tool.

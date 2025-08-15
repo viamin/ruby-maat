@@ -1,4 +1,0 @@
-language: clojure
-
-jdk:
-  - openjdk8
