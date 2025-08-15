@@ -122,9 +122,9 @@ RSpec.describe RubyMaat::Analysis::LogicalCoupling do
       results = analysis.analyze(dataset, options)
 
       # Check if verbose columns are present
-      expect(results.keys).to include("first_entity_revisions")
-      expect(results.keys).to include("second_entity_revisions")
-      expect(results.keys).to include("shared_revisions")
+      expect(results.keys).to include("first-entity-revisions")
+      expect(results.keys).to include("second-entity-revisions")
+      expect(results.keys).to include("shared-revisions")
     end
 
     it "sorts results by coupling degree descending" do

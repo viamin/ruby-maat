@@ -25,18 +25,18 @@ module RubyMaat
       private
 
       def write_csv(dataframe, stream)
-        return if dataframe.empty?
-
-        # Get column names
-        columns = dataframe.keys
-
         # Write CSV
         csv = CSV.new(stream)
+
+        # Get column names (even empty dataframes should have column structure)
+        columns = dataframe.keys
 
         # Write header
         csv << columns
 
-        # Write data rows
+        # Write data rows (skip if empty)
+        return if dataframe.empty?
+
         row_count = 0
         dataframe.each_row do |row|
           break if @max_rows && row_count >= @max_rows

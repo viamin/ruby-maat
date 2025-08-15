@@ -19,7 +19,12 @@ module RubyMaat
 
       # Helper to convert analysis results to CSV-compatible format
       def to_csv_data(results, columns)
-        return [] if results.empty?
+        if results.empty?
+          # Create empty dataframe with proper column structure
+          empty_data = {}
+          columns.each { |col| empty_data[col] = [] }
+          return Rover::DataFrame.new(empty_data)
+        end
 
         if results.is_a?(Rover::DataFrame)
           # Already a dataframe

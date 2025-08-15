@@ -5,12 +5,12 @@ module RubyMaat
     # Entities analysis - counts revisions per entity
     class Entities < BaseAnalysis
       def analyze(dataset, options = {})
-        min_revs = options[:min_revs] || 5
+        min_revs = options[:min_revs] || 1
 
         # Group by entity and count revisions manually
         entity_stats = {}
 
-        dataset.to_df.each_row do |row|
+        dataset.to_df.to_a.each do |row|
           entity = row["entity"]
           revision = row["revision"]
 
@@ -33,7 +33,7 @@ module RubyMaat
         # Sort by number of revisions (descending)
         results.sort! { |a, b| b[:"n-revs"] <=> a[:"n-revs"] }
 
-        to_csv_data(results, %i[entity n-revs])
+        to_csv_data(results, [:entity, :"n-revs"])
       end
     end
   end

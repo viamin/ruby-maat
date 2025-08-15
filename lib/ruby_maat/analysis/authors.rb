@@ -29,18 +29,18 @@ module RubyMaat
 
           results << {
             entity: entity,
-            n_authors: stats[:authors].size,
-            n_revs: n_revs
+            "n-authors": stats[:authors].size,
+            "n-revs": n_revs
           }
         end
 
         # Sort by number of authors (descending), then by revisions (descending)
         results.sort! do |a, b|
-          comparison = b[:n_authors] <=> a[:n_authors]
-          comparison.zero? ? b[:n_revs] <=> a[:n_revs] : comparison
+          comparison = b[:"n-authors"] <=> a[:"n-authors"]
+          comparison.zero? ? b[:"n-revs"] <=> a[:"n-revs"] : comparison
         end
 
-        to_csv_data(results, %i[entity n_authors n_revs])
+        to_csv_data(results, [:entity, :"n-authors", :"n-revs"])
       end
     end
   end

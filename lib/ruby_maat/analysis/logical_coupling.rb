@@ -42,14 +42,14 @@ module RubyMaat
             entity: entity1,
             coupled: entity2,
             degree: coupling_degree,
-            average_revs: avg_revs.ceil
+            "average-revs": avg_revs.ceil
           }
 
           if verbose_results
             result.merge!(
-              first_entity_revisions: entity1_revs,
-              second_entity_revisions: entity2_revs,
-              shared_revisions: shared_revs
+              "first-entity-revisions": entity1_revs,
+              "second-entity-revisions": entity2_revs,
+              "shared-revisions": shared_revs
             )
           end
 
@@ -59,11 +59,11 @@ module RubyMaat
         # Sort by coupling degree (descending), then by average revisions (descending)
         results.sort! do |a, b|
           comparison = b[:degree] <=> a[:degree]
-          comparison.zero? ? b[:average_revs] <=> a[:average_revs] : comparison
+          comparison.zero? ? b[:"average-revs"] <=> a[:"average-revs"] : comparison
         end
 
-        columns = %i[entity coupled degree average_revs]
-        columns += %i[first_entity_revisions second_entity_revisions shared_revisions] if verbose_results
+        columns = [:entity, :coupled, :degree, :"average-revs"]
+        columns += [:"first-entity-revisions", :"second-entity-revisions", :"shared-revisions"] if verbose_results
 
         to_csv_data(results, columns)
       end
