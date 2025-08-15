@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require "date"
 module RubyMaat
   module Parsers
     # Git2 parser - preferred Git parser (more tolerant and faster)
@@ -14,38 +15,34 @@ module RubyMaat
     # --abc123--2015-06-16--Jane Doe
     # 10      5       lib/example.rb
     class Git2Parser < BaseParser
-      COMMIT_SEPARATOR = /^--([a-f0-9]+)--(\d{4}-\d{2}-\d{2})--(.+)$/
-      CHANGE_PATTERN = /^(\d+|-)\s+(\d+|-)\s+(.+)$/
+      COMMIT_SEPARATOR = /^--([a-z0-9]+)--(\d{4}-\d{2}-\d{2})--(.+)$/
+      CHANGE_PATTERN = /^(-|\d+)\s+(-|\d+)\s+(.*)$/
 
       protected
 
       def parse_content(content)
-        entries = []
+        records = []
         current_commit = nil
 
         content.each_line do |line|
-          line = line.chomp
-
-          # Skip empty lines
-          next if line.strip.empty?
+          line.strip!
+          next if line.empty?
 
           if (commit_match = line.match(COMMIT_SEPARATOR))
-            # New commit header
             current_commit = {
               revision: commit_match[1],
               date: parse_date(commit_match[2]),
               author: commit_match[3].strip
             }
           elsif current_commit && (change_match = line.match(CHANGE_PATTERN))
-            # File change line
             added = clean_numstat(change_match[1])
             deleted = clean_numstat(change_match[2])
             file = change_match[3].strip
 
-            # Skip empty or invalid file names
             next if file.empty? || file == File::NULL
+            next if added.nil? && deleted.nil?
 
-            entries << ChangeRecord.new(
+            records << ChangeRecord.new(
               entity: file,
               author: current_commit[:author],
               date: current_commit[:date],
@@ -54,10 +51,21 @@ module RubyMaat
               loc_deleted: deleted
             )
           end
-          # Ignore unrecognized lines (could be merge info, etc.)
         end
 
-        entries
+        records
+      end
+
+      private
+
+      def parse_date(date_str)
+        Date.parse(date_str)
+      rescue Date::Error
+        nil
+      end
+
+      def clean_numstat(value)
+        (value == "-") ? nil : value.to_i
       end
     end
   end

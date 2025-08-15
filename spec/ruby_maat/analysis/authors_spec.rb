@@ -24,14 +24,14 @@ RSpec.describe RubyMaat::Analysis::Authors do
       results_array = []
       results.each_row { |row| results_array << row.to_h }
 
-      file1_result = results_array.find { |r| r[:entity] == "file1.rb" }
-      file2_result = results_array.find { |r| r[:entity] == "file2.rb" }
+      file1_result = results_array.find { |r| r["entity"] == "file1.rb" }
+      file2_result = results_array.find { |r| r["entity"] == "file2.rb" }
 
-      expect(file1_result[:n_authors]).to eq(3) # alice, bob, charlie
-      expect(file1_result[:n_revs]).to eq(5)    # rev1, rev2, rev3, rev4, rev5
+      expect(file1_result["n_authors"]).to eq(3) # alice, bob, charlie
+      expect(file1_result["n_revs"]).to eq(5)    # rev1, rev2, rev3, rev4, rev5
 
-      expect(file2_result[:n_authors]).to eq(2) # alice, bob
-      expect(file2_result[:n_revs]).to eq(2)    # rev6, rev7
+      expect(file2_result["n_authors"]).to eq(2) # alice, bob
+      expect(file2_result["n_revs"]).to eq(2)    # rev6, rev7
     end
 
     it "sorts results by number of authors descending" do
@@ -40,8 +40,8 @@ RSpec.describe RubyMaat::Analysis::Authors do
       results_array = []
       results.each_row { |row| results_array << row.to_h }
 
-      expect(results_array.first[:entity]).to eq("file1.rb") # 3 authors
-      expect(results_array.last[:entity]).to eq("file2.rb")  # 2 authors
+      expect(results_array.first["entity"]).to eq("file1.rb") # 3 authors
+      expect(results_array.last["entity"]).to eq("file2.rb")  # 2 authors
     end
 
     it "filters by minimum revisions" do
@@ -53,7 +53,7 @@ RSpec.describe RubyMaat::Analysis::Authors do
 
       # Only file1.rb has >= 3 revisions
       expect(results_array.size).to eq(1)
-      expect(results_array.first[:entity]).to eq("file1.rb")
+      expect(results_array.first["entity"]).to eq("file1.rb")
     end
 
     it "handles empty dataset" do

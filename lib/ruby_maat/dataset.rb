@@ -40,14 +40,14 @@ module RubyMaat
 
     # Get all entities (files)
     def entities
-      return [] if @data.none?
+      return [] if @data.empty?
 
       @data[:entity].uniq
     end
 
     # Get all authors
     def authors
-      return [] if @data.none?
+      return [] if @data.empty?
 
       @data[:author].uniq
     end
@@ -56,9 +56,9 @@ module RubyMaat
     def filter_min_revisions(min_revs)
       # Group by entity and count revisions
       entity_revision_counts = {}
-      @data.each_row do |row|
-        entity = row[:entity]
-        revision = row[:revision]
+      @data.to_a.each do |row|
+        entity = row["entity"]
+        revision = row["revision"]
         entity_revision_counts[entity] ||= Set.new
         entity_revision_counts[entity] << revision
       end
@@ -68,20 +68,20 @@ module RubyMaat
 
       # Filter data to only include those entities
       filtered_records = []
-      @data.each_row do |row|
-        filtered_records << row.to_h if entities_to_keep.include?(row[:entity])
+      @data.to_a.each do |row|
+        filtered_records << row if entities_to_keep.include?(row["entity"])
       end
 
       # Build new dataset from filtered records
       change_records = filtered_records.map do |record|
         ChangeRecord.new(
-          entity: record[:entity],
-          author: record[:author],
-          date: record[:date],
-          revision: record[:revision],
-          message: record[:message],
-          loc_added: record[:loc_added],
-          loc_deleted: record[:loc_deleted]
+          entity: record["entity"],
+          author: record["author"],
+          date: record["date"],
+          revision: record["revision"],
+          message: record["message"],
+          loc_added: record["loc_added"],
+          loc_deleted: record["loc_deleted"]
         )
       end
 
@@ -93,9 +93,9 @@ module RubyMaat
       # Group by revision to find entities that changed together
       revision_entities = {}
 
-      @data.each_row do |row|
-        revision = row[:revision]
-        entity = row[:entity]
+      @data.to_a.each do |row|
+        revision = row["revision"]
+        entity = row["entity"]
 
         revision_entities[revision] ||= []
         revision_entities[revision] << entity unless revision_entities[revision].include?(entity)
@@ -116,11 +116,11 @@ module RubyMaat
       entity1_revs = Set.new
       entity2_revs = Set.new
 
-      @data.each_row do |row|
-        if row[:entity] == entity1
-          entity1_revs << row[:revision]
-        elsif row[:entity] == entity2
-          entity2_revs << row[:revision]
+      @data.to_a.each do |row|
+        if row["entity"] == entity1
+          entity1_revs << row["revision"]
+        elsif row["entity"] == entity2
+          entity2_revs << row["revision"]
         end
       end
 
@@ -130,8 +130,8 @@ module RubyMaat
     # Get revision count for an entity
     def revision_count(entity)
       revisions = Set.new
-      @data.each_row do |row|
-        revisions << row[:revision] if row[:entity] == entity
+      @data.to_a.each do |row|
+        revisions << row["revision"] if row["entity"] == entity
       end
       revisions.size
     end
@@ -171,7 +171,7 @@ module RubyMaat
     end
 
     def empty?
-      @data.none?
+      @data.empty?
     end
 
     private
@@ -180,23 +180,23 @@ module RubyMaat
       return Rover::DataFrame.new if change_records.empty?
 
       data_hash = {
-        entity: [],
-        author: [],
-        date: [],
-        revision: [],
-        message: [],
-        loc_added: [],
-        loc_deleted: []
+        "entity" => [],
+        "author" => [],
+        "date" => [],
+        "revision" => [],
+        "message" => [],
+        "loc_added" => [],
+        "loc_deleted" => []
       }
 
       change_records.each do |record|
-        data_hash[:entity] << record.entity
-        data_hash[:author] << record.author
-        data_hash[:date] << record.date
-        data_hash[:revision] << record.revision
-        data_hash[:message] << record.message
-        data_hash[:loc_added] << record.loc_added
-        data_hash[:loc_deleted] << record.loc_deleted
+        data_hash["entity"] << record.entity
+        data_hash["author"] << record.author
+        data_hash["date"] << record.date
+        data_hash["revision"] << record.revision
+        data_hash["message"] << record.message
+        data_hash["loc_added"] << record.loc_added
+        data_hash["loc_deleted"] << record.loc_deleted
       end
 
       Rover::DataFrame.new(data_hash)

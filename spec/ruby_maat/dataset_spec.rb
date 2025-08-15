@@ -109,7 +109,7 @@ RSpec.describe RubyMaat::Dataset do
 
       # Convert to hash for easier testing
       dates_hash = {}
-      latest_dates.each_row { |row| dates_hash[row[:entity]] = row[:date] }
+      latest_dates.to_a.each { |row| dates_hash[row["entity"]] = row["max_date"] }
 
       expect(dates_hash["file1.rb"]).to eq(Date.parse("2023-01-04"))
       expect(dates_hash["file2.rb"]).to eq(Date.parse("2023-01-03"))

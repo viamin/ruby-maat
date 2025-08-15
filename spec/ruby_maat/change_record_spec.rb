@@ -63,7 +63,7 @@ RSpec.describe RubyMaat::ChangeRecord do
           date: "invalid-date",
           revision: "def456"
         )
-      end.to raise_error(ArgumentError, /Invalid date format/)
+      end.to raise_error(Date::Error)
     end
   end
 

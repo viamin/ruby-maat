@@ -6,9 +6,9 @@ module RubyMaat
     # This identifies hidden dependencies between code modules
     class LogicalCoupling < BaseAnalysis
       def analyze(dataset, options = {})
-        min_revs = options[:min_revs] || 5
-        min_shared_revs = options[:min_shared_revs] || 5
-        min_coupling = options[:min_coupling] || 30
+        min_revs = options[:min_revs] || 1
+        min_shared_revs = options[:min_shared_revs] || 1
+        min_coupling = options[:min_coupling] || 1
         max_coupling = options[:max_coupling] || 100
         max_changeset_size = options[:max_changeset_size] || 30
         verbose_results = options[:verbose_results] || false
@@ -20,7 +20,7 @@ module RubyMaat
         coupling_frequencies = calculate_coupling_frequencies(co_changing_entities)
 
         # Calculate revision counts per entity
-        entity_revisions = calculate_entity_revisions(co_changing_entities)
+        entity_revisions = calculate_entity_revisions(dataset)
 
         # Generate coupling results
         results = []
@@ -74,9 +74,9 @@ module RubyMaat
         # Group changes by revision to find entities that changed together
         by_revision = {}
 
-        dataset.to_df.each_row do |row|
-          revision = row[:revision]
-          entity = row[:entity]
+        dataset.to_df.to_a.each do |row|
+          revision = row["revision"]
+          entity = row["entity"]
 
           by_revision[revision] ||= []
           by_revision[revision] << entity
@@ -114,16 +114,20 @@ module RubyMaat
         frequencies
       end
 
-      def calculate_entity_revisions(co_changing_entities)
-        # Count total revisions per entity
-        revisions = Hash.new(0)
+      def calculate_entity_revisions(dataset)
+        # Count unique revisions per entity from the dataset
+        entity_revisions = {}
 
-        co_changing_entities.each do |entity1, entity2|
-          revisions[entity1] += 1
-          revisions[entity2] += 1
+        dataset.to_df.to_a.each do |row|
+          entity = row["entity"]
+          revision = row["revision"]
+
+          entity_revisions[entity] ||= Set.new
+          entity_revisions[entity] << revision
         end
 
-        revisions
+        # Convert to counts
+        entity_revisions.transform_values(&:size)
       end
     end
   end

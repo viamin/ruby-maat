@@ -45,11 +45,11 @@ RSpec.describe RubyMaat::Analysis::LogicalCoupling do
 
       # Should find coupling between file1.rb and file2.rb
       file1_file2_coupling = results_array.find do |r|
-        r[:entity] == "file1.rb" && r[:coupled] == "file2.rb"
+        r["entity"] == "file1.rb" && r["coupled"] == "file2.rb"
       end
 
       expect(file1_file2_coupling).not_to be_nil
-      expect(file1_file2_coupling[:degree]).to be > 0
+      expect(file1_file2_coupling["degree"]).to be > 0
     end
 
     it "filters by minimum coupling threshold" do
@@ -122,9 +122,9 @@ RSpec.describe RubyMaat::Analysis::LogicalCoupling do
       results = analysis.analyze(dataset, options)
 
       # Check if verbose columns are present
-      expect(results.keys).to include(:first_entity_revisions)
-      expect(results.keys).to include(:second_entity_revisions)
-      expect(results.keys).to include(:shared_revisions)
+      expect(results.keys).to include("first_entity_revisions")
+      expect(results.keys).to include("second_entity_revisions")
+      expect(results.keys).to include("shared_revisions")
     end
 
     it "sorts results by coupling degree descending" do
@@ -142,7 +142,7 @@ RSpec.describe RubyMaat::Analysis::LogicalCoupling do
       results.each_row { |row| results_array << row.to_h }
 
       # Results should be sorted by degree descending
-      degrees = results_array.map { |r| r[:degree] }
+      degrees = results_array.map { |r| r["degree"] }
       expect(degrees).to eq(degrees.sort.reverse)
     end
   end

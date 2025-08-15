@@ -9,11 +9,11 @@ module RubyMaat
     def initialize(entity:, author:, date:, revision:, message: nil, loc_added: nil, loc_deleted: nil)
       @entity = entity
       @author = author
-      @date = parse_date(date)
+      @date = date.is_a?(Date) ? date : Date.parse(date)
       @revision = revision
       @message = message
-      @loc_added = loc_added&.to_i
-      @loc_deleted = loc_deleted&.to_i
+      @loc_added = loc_added.to_i if loc_added && (!loc_added.is_a?(Float) || !loc_added.nan?)
+      @loc_deleted = loc_deleted.to_i if loc_deleted && (!loc_deleted.is_a?(Float) || !loc_deleted.nan?)
     end
 
     def to_h
@@ -42,21 +42,6 @@ module RubyMaat
 
     def eql?(other)
       self == other
-    end
-
-    private
-
-    def parse_date(date_input)
-      case date_input
-      when Date
-        date_input
-      when String
-        Date.parse(date_input)
-      else
-        raise ArgumentError, "Date must be a Date object or parseable string, got #{date_input.class}"
-      end
-    rescue Date::Error
-      raise ArgumentError, "Invalid date format: #{date_input}"
     end
   end
 end
