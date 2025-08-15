@@ -1,0 +1,90 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Ruby-native conventional commit validator
+# Based on the configuration in .commitlintrc.json
+
+require "json"
+
+# Load commitlint config
+config_file = File.join(__dir__, "..", ".commitlintrc.json")
+config = JSON.parse(File.read(config_file))
+
+# Read commit message
+commit_msg_file = ARGV[0]
+commit_msg = File.read(commit_msg_file).strip
+
+# Extract rules from config
+type_enum = config.dig("rules", "type-enum", 2) || []
+scope_enum = config.dig("rules", "scope-enum", 2) || []
+
+# Parse commit message
+commit_pattern = /^(\w+)(\(([^)]+)\))?: (.+)$/
+match = commit_msg.match(commit_pattern)
+
+errors = []
+warnings = []
+
+if match.nil?
+  errors << "Commit message must follow format: <type>[optional scope]: <description>"
+else
+  type, _, scope, description = match.captures
+
+  # Validate type
+  if type.nil? || type.empty?
+    errors << "Type cannot be empty"
+  elsif !type_enum.include?(type)
+    errors << "Type '#{type}' is not allowed. Use one of: #{type_enum.join(", ")}"
+  end
+
+  # Validate scope (if present)
+  if scope && !scope_enum.empty? && !scope_enum.include?(scope)
+    warnings << "Scope '#{scope}' is not in recommended list: #{scope_enum.join(", ")}"
+  end
+
+  # Validate description
+  if description.nil? || description.empty?
+    errors << "Description cannot be empty"
+  elsif description.end_with?(".")
+    errors << "Description should not end with a period"
+  end
+end
+
+# Check header length
+if commit_msg.lines.first.length > 100
+  warnings << "Header is longer than 100 characters (#{commit_msg.lines.first.length} chars)"
+end
+
+# Check body line length (if exists)
+if commit_msg.lines.size > 1
+  commit_msg.lines.drop(2).each_with_index do |line, index|
+    next if line.strip.empty?
+
+    if line.length > 100
+      warnings << "Body line #{index + 3} is longer than 100 characters (#{line.length} chars)"
+    end
+  end
+end
+
+# Output results
+unless warnings.empty?
+  puts "⚠️  Warnings:"
+  warnings.each { |warning| puts "   #{warning}" }
+  puts
+end
+
+unless errors.empty?
+  puts "❌ Errors:"
+  errors.each { |error| puts "   #{error}" }
+  puts
+  puts "💡 Examples of valid commit messages:"
+  puts "   feat(analysis): add new complexity analysis algorithm"
+  puts "   fix(parser): handle binary files correctly in git2 parser"
+  puts "   docs: update installation instructions for Windows users"
+  puts "   test(integration): add end-to-end tests for coupling analysis"
+  puts
+  exit 1
+end
+
+puts "✅ Commit message follows conventional commit format"
+exit 0

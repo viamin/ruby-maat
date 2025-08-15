@@ -386,19 +386,72 @@ Ruby Maat processes all its content in memory, which may not scale to very large
 
 For extremely large repositories (>100k commits), the original Java/Clojure version may have better memory management, but Ruby Maat should handle most real-world repositories without issues.
 
+### Windows Compatibility
+
+**Note for Windows users**: Ruby Maat currently has dependencies on native extensions (`numo-narray`) that may have compilation issues on Windows with certain Ruby versions. If you encounter installation problems:
+
+1. **Use WSL2** (Windows Subsystem for Linux) for the best experience
+2. **Use Docker** as an alternative: `docker run -v /path/to/logs:/data ruby-maat -l /data/logfile.log -c git2 -a summary`
+3. **Check the Issues page** for current workarounds and updates on Windows compatibility
+
 ## Development
 
 ### Contributing
 
 1. Fork the repository
 2. Create a feature branch (`git checkout -b my-new-feature`)
-3. Make your changes following the existing code style
-4. Add tests for your changes
-5. Run the test suite (`bundle exec rspec`)
-6. Run the linter (`bundle exec standardrb`)
-7. Commit your changes (`git commit -am 'Add some feature'`)
-8. Push to the branch (`git push origin my-new-feature`)
-9. Create a new Pull Request
+3. **Set up git hooks** (recommended):
+
+   ```bash
+   # Install Overcommit git hooks (Ruby-native alternative to pre-commit)
+   bundle exec overcommit --install
+   
+   # Note: If you encounter Ruby 3.4 compatibility issues, you can:
+   # 1. Use Ruby 3.3 or earlier, or
+   # 2. Run quality checks manually: bundle exec rspec && bundle exec standardrb
+   ```
+
+4. Make your changes following the existing code style
+5. Add tests for your changes
+6. **Use conventional commit messages**:
+
+   ```text
+   feat: add new analysis type for code complexity
+   fix: resolve parsing issue with binary files
+   docs: update installation instructions
+   test: add integration tests for coupling analysis
+   ```
+
+7. Run the test suite (`bundle exec rspec`)
+8. Run the linter (`bundle exec standardrb`)
+9. Commit your changes (git hooks will run automatically)
+10. Push to the branch (`git push origin my-new-feature`)
+11. Create a new Pull Request
+
+#### Conventional Commit Format
+
+This project uses [Conventional Commits](https://www.conventionalcommits.org/) for automated versioning and changelog generation. **All new commits must follow this format**:
+
+```text
+<type>[optional scope]: <description>
+
+[optional body]
+
+[optional footer(s)]
+```
+
+**Types**: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `revert`
+
+**Scopes**: `analysis`, `parser`, `output`, `cli`, `dataset`, `grouper`, `core`, `deps`, `ci`
+
+**Examples**:
+
+- `feat(analysis): add new complexity analysis algorithm`
+- `fix(parser): handle binary files correctly in git2 parser`
+- `docs: update installation instructions for Windows users`
+- `test(integration): add end-to-end tests for coupling analysis`
+
+> **Note**: This project transitioned to conventional commits for Release Please automation. Historical commits may not follow this format, but all new contributions must use conventional commit messages.
 
 ### Running Tests
 

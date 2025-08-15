@@ -15,9 +15,11 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest]
         ruby: ['3.2', '3.3', '3.4']
-        include:
-          - os: windows-latest
-            ruby: '3.3'
+        # Note: Windows disabled due to numo-narray native extension compilation issues
+        # See: https://github.com/ruby-numo/numo-narray/issues/161
+        # include:
+        #   - os: windows-latest
+        #     ruby: '3.3'
 
     steps:
     - name: Checkout code

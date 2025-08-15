@@ -15,3 +15,6 @@ gem "standard", ">= 1.35.1"
 # Security and coverage tools
 gem "bundler-audit", require: false
 gem "simplecov", require: false
+
+# Git hooks
+gem "overcommit", require: false
