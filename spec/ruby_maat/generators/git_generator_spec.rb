@@ -79,25 +79,27 @@ RSpec.describe RubyMaat::Generators::GitGenerator do
     context "with git2 format" do
       it "builds correct git2 command" do
         expected_command = "git log --all --numstat --date=short --pretty=format:'--%h--%ad--%aN' --no-renames"
-        expect(generator).to receive(:execute_command).with(expected_command)
+        allow(generator).to receive(:execute_command).with(expected_command)
 
         generator.generate_log(nil, format: "git2", all_branches: true, no_renames: true)
+        expect(generator).to have_received(:execute_command).with(expected_command)
       end
     end
 
     context "with legacy format" do
       it "builds correct legacy command" do
         expected_command = "git log --all --pretty=format:'[%h] %aN %ad %s' --date=short --numstat --no-renames"
-        expect(generator).to receive(:execute_command).with(expected_command)
+        allow(generator).to receive(:execute_command).with(expected_command)
 
         generator.generate_log(nil, format: "legacy", all_branches: true, no_renames: true)
+        expect(generator).to have_received(:execute_command).with(expected_command)
       end
     end
 
     context "with date filtering" do
       it "includes date filters in command" do
         expected_command = "git log --all --numstat --date=short --pretty=format:'--%h--%ad--%aN' --no-renames --after=2023-01-01 --before=2023-12-31"
-        expect(generator).to receive(:execute_command).with(expected_command)
+        allow(generator).to receive(:execute_command).with(expected_command)
 
         generator.generate_log(nil,
           format: "git2",
@@ -105,6 +107,7 @@ RSpec.describe RubyMaat::Generators::GitGenerator do
           no_renames: true,
           since: "2023-01-01",
           until: "2023-12-31")
+        expect(generator).to have_received(:execute_command).with(expected_command)
       end
     end
   end

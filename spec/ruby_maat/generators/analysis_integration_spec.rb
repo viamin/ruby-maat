@@ -5,9 +5,9 @@ require "ruby_maat/generators/git_generator"
 require "ruby_maat/analysis_presets"
 require "tmpdir"
 
-RSpec.describe "Generator Analysis Integration" do
+RSpec.describe RubyMaat::Generators::GitGenerator, "Analysis Integration" do
   let(:temp_dir) { Dir.mktmpdir }
-  let(:generator) { RubyMaat::Generators::GitGenerator.new(temp_dir) }
+  let(:generator) { described_class.new(temp_dir) }
 
   before do
     # Create a mock git repository
@@ -26,12 +26,8 @@ RSpec.describe "Generator Analysis Integration" do
   describe "#interactive_generate_for_analysis" do
     before do
       allow($stdin).to receive(:tty?).and_return(true)
-      allow(generator).to receive(:execute_command).and_return("--abc123--2023-01-01--Test User\n1\t0\ttest.rb\n")
       # Mock all the interactive input methods to avoid hanging
-      allow(generator).to receive(:choose_analysis_preset).and_return({since: "2023-01-01"})
-      allow(generator).to receive(:gather_custom_options).and_return({since: "2023-01-01"})
-      allow(generator).to receive(:ask_yes_no).and_return(false) # Don't save log
-      allow(generator).to receive(:generate_log).and_return("mock log")
+      allow(generator).to receive_messages(execute_command: "--abc123--2023-01-01--Test User\n1\t0\ttest.rb\n", choose_analysis_preset: {since: "2023-01-01"}, gather_custom_options: {since: "2023-01-01"}, ask_yes_no: false, generate_log: "mock log")
     end
 
     it "uses analysis-specific presets for coupling analysis" do
@@ -65,11 +61,9 @@ RSpec.describe "Generator Analysis Integration" do
 
     it "uses appropriate preset options for analysis" do
       # Test that the interactive method uses analysis-specific presets
-      allow(generator).to receive(:ask_yes_no).and_return(false) # Don't save log
-      allow(generator).to receive(:choose_analysis_preset).and_return({since: "2023-01-01"})
-      allow(generator).to receive(:gather_custom_options).and_return({since: "2023-01-01"})
+      allow(generator).to receive_messages(ask_yes_no: false, choose_analysis_preset: {since: "2023-01-01"}, gather_custom_options: {since: "2023-01-01"})
 
-      expect(generator).to receive(:generate_log).with(
+      allow(generator).to receive(:generate_log).with(
         nil, # No filename when not saving
         hash_including(since: "2023-01-01")
       ).and_return("mock log")
@@ -78,17 +72,27 @@ RSpec.describe "Generator Analysis Integration" do
       capture_stdout do
         generator.interactive_generate_for_analysis("coupling")
       end
+
+      expect(generator).to have_received(:generate_log).with(
+        nil,
+        hash_including(since: "2023-01-01")
+      )
     end
 
     it "merges analysis-specific options" do
       analysis_options = {min_revs: 10, verbose: true}
 
-      expect(generator).to receive(:generate_log).with(
+      allow(generator).to receive(:generate_log).with(
         nil,
         hash_including(analysis_options)
       ).and_return("mock log")
 
       generator.interactive_generate_for_analysis("coupling", analysis_options)
+
+      expect(generator).to have_received(:generate_log).with(
+        nil,
+        hash_including(analysis_options)
+      )
     end
 
     private
@@ -187,21 +191,12 @@ RSpec.describe "Generator Analysis Integration" do
     it "handles invalid analysis gracefully" do
       # Mock all interactive dependencies to avoid hanging
       allow($stdin).to receive(:tty?).and_return(true)
-      allow(generator).to receive(:ask_yes_no).and_return(false) # Don't save log
-      allow(generator).to receive(:gather_custom_options).and_return({})
-      allow(generator).to receive(:generate_log).and_return("mock log")
+      allow(generator).to receive_messages(ask_yes_no: false, gather_custom_options: {}, generate_log: "mock log")
 
       # Should not crash, just show "No presets available"
       expect {
-        output = StringIO.new
-        original_stdout = $stdout
-        $stdout = output
-        begin
-          generator.interactive_generate_for_analysis("nonexistent-analysis")
-        ensure
-          $stdout = original_stdout
-        end
-      }.not_to raise_error
+        generator.interactive_generate_for_analysis("nonexistent-analysis")
+      }.to output(/No presets available/).to_stdout.and not_raise_error
     end
   end
 

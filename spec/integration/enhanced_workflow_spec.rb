@@ -5,8 +5,10 @@ require "ruby_maat/cli"
 require "tmpdir"
 require "stringio"
 
-RSpec.describe "Enhanced Ruby Maat Workflow", type: :integration do
+RSpec.describe RubyMaat::CLI, "Enhanced Ruby Maat Workflow", type: :integration do
   let(:temp_dir) { Dir.mktmpdir }
+
+  let(:original_dir) { Dir.pwd }
 
   before do
     # Create a more realistic mock git repository with multiple commits
@@ -36,13 +38,12 @@ RSpec.describe "Enhanced Ruby Maat Workflow", type: :integration do
       `git -c user.name="Alice" -c user.email="alice@example.com" commit -m "Add utility class" 2>/dev/null`
     end
 
-    @original_dir = Dir.pwd
     Dir.chdir(temp_dir)
   end
 
   after do
     begin
-      Dir.chdir(@original_dir) if @original_dir && Dir.exist?(@original_dir)
+      Dir.chdir(original_dir) if original_dir && Dir.exist?(original_dir)
     rescue
       # If original_dir doesn't exist, just continue
     end
@@ -80,7 +81,7 @@ RSpec.describe "Enhanced Ruby Maat Workflow", type: :integration do
   end
 
   describe "End-to-end log generation and analysis" do
-    let(:cli) { RubyMaat::CLI.new }
+    let(:cli) { described_class.new }
 
     it "generates log and runs coupling analysis in one command" do
       output = capture_output do
@@ -151,14 +152,14 @@ RSpec.describe "Enhanced Ruby Maat Workflow", type: :integration do
 
   describe "Error handling integration" do
     it "provides helpful error for unsupported VCS in log generation" do
-      cli = RubyMaat::CLI.new
+      cli = described_class.new
 
       expect { cli.run(["--generate-log", "-c", "fossil"]) }
         .to raise_error(SystemExit)
     end
 
     it "validates analysis types exist" do
-      cli = RubyMaat::CLI.new
+      cli = described_class.new
 
       expect { cli.run(["--generate-log", "-c", "git", "-a", "nonexistent-analysis"]) }
         .to raise_error(SystemExit)
@@ -169,7 +170,7 @@ RSpec.describe "Enhanced Ruby Maat Workflow", type: :integration do
     it "cleans up temporary files" do
       initial_temp_files = Dir.glob("/tmp/ruby_maat*").length
 
-      cli = RubyMaat::CLI.new
+      cli = described_class.new
       capture_output do
         cli.run(["--generate-log", "--preset", "git2-format", "-c", "git", "-a", "summary"])
       end

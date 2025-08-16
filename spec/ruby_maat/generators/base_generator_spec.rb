@@ -58,10 +58,11 @@ RSpec.describe RubyMaat::Generators::BaseGenerator do
   describe "#generate_log" do
     context "without output file" do
       it "generates temporary log" do
-        expect(generator).to receive(:execute_command).with("test command with default").and_return("log output")
+        allow(generator).to receive(:execute_command).with("test command with default").and_return("log output")
 
         result = generator.generate_log
         expect(result).to eq("log output")
+        expect(generator).to have_received(:execute_command).with("test command with default")
       end
     end
 
@@ -69,21 +70,23 @@ RSpec.describe RubyMaat::Generators::BaseGenerator do
       let(:output_file) { File.join(temp_dir, "test.log") }
 
       it "generates persistent log file" do
-        expect(generator).to receive(:execute_command).with("test command with default").and_return("log output")
+        allow(generator).to receive(:execute_command).with("test command with default").and_return("log output")
 
         result = generator.generate_log(output_file)
 
         expect(result).to eq(output_file)
         expect(File.exist?(output_file)).to be true
         expect(File.read(output_file)).to eq("log output")
+        expect(generator).to have_received(:execute_command).with("test command with default")
       end
     end
 
     context "with options" do
       it "merges options and passes to build_command" do
-        expect(generator).to receive(:execute_command).with("test command with custom").and_return("log output")
+        allow(generator).to receive(:execute_command).with("test command with custom").and_return("log output")
 
         generator.generate_log(nil, test_option: "custom")
+        expect(generator).to have_received(:execute_command).with("test command with custom")
       end
     end
   end

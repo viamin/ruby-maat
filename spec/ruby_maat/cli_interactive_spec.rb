@@ -16,9 +16,7 @@ RSpec.describe RubyMaat::CLI do
   before do
     # Mock all external dependencies completely to avoid directory issues
     allow(RubyMaat::Generators::GitGenerator).to receive(:new).and_return(mock_generator)
-    allow(mock_generator).to receive(:generate_log).and_return("mock log")
-    allow(mock_generator).to receive(:interactive_generate_for_analysis).and_return("mock log")
-    allow(mock_generator).to receive(:available_presets).and_return({
+    allow(mock_generator).to receive_messages(generate_log: "mock log", interactive_generate_for_analysis: "mock log", available_presets: {
       "git2-format" => {options: {}}
     })
     allow(RubyMaat::App).to receive(:new).and_return(mock_app)
@@ -72,8 +70,7 @@ RSpec.describe RubyMaat::CLI do
     before do
       # Mock generator creation and execution
       allow(RubyMaat::Generators::GitGenerator).to receive(:new).and_return(mock_generator)
-      allow(mock_generator).to receive(:generate_log).and_return(mock_log_output)
-      allow(mock_generator).to receive(:available_presets).and_return({
+      allow(mock_generator).to receive_messages(generate_log: mock_log_output, available_presets: {
         "git2-format" => {options: {}}
       })
       allow(RubyMaat::App).to receive(:new).and_return(mock_app)

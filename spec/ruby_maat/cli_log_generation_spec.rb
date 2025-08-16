@@ -4,7 +4,7 @@ require "spec_helper"
 require "ruby_maat/cli"
 require "tmpdir"
 
-RSpec.describe RubyMaat::CLI, "log generation" do
+RSpec.describe RubyMaat::CLI, "#log_generation" do
   let(:temp_dir) { Dir.mktmpdir }
   let(:cli) { described_class.new }
   let(:mock_generator) { instance_double(RubyMaat::Generators::GitGenerator) }
@@ -13,8 +13,7 @@ RSpec.describe RubyMaat::CLI, "log generation" do
   before do
     # Mock all external dependencies completely to avoid directory and CLI execution issues
     allow(RubyMaat::Generators::GitGenerator).to receive(:new).and_return(mock_generator)
-    allow(mock_generator).to receive(:generate_log).and_return("mock log")
-    allow(mock_generator).to receive(:available_presets).and_return({
+    allow(mock_generator).to receive_messages(generate_log: "mock log", available_presets: {
       "git2-format" => {options: {}}
     })
     allow(RubyMaat::App).to receive(:new).and_return(mock_app)
