@@ -17,7 +17,7 @@ module RubyMaat
     # ... //depot/project/test/test.java#1 add
     class PerforceParser < BaseParser
       CHANGE_PATTERN = %r{^Change\s+(\d+)\s+by\s+([^@]+)@\S+\s+on\s+(\d{4}/\d{2}/\d{2})}
-      FILE_PATTERN = /^\.\.\.\s+(.+?)#\d+\s+(\w+)/
+      FILE_PATTERN = /^\.\.\.\s+([^#]+)#\d+\s+(\w+)/
 
       protected
 

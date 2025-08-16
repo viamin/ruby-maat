@@ -19,9 +19,9 @@ module RubyMaat
     #   add $/Project/test/test.cs
     class TfsParser < BaseParser
       CHANGESET_PATTERN = /^Changeset:\s+(\d+)/
-      USER_PATTERN = /^User:\s+(.+)/
-      DATE_PATTERN = /^Date:\s+(.+)/
-      ITEM_PATTERN = /^\s+(edit|add|delete)\s+(\S.+)/
+      USER_PATTERN = /^User:\s+([^\r\n]+)/
+      DATE_PATTERN = /^Date:\s+([^\r\n]+)/
+      ITEM_PATTERN = /^\s+(edit|add|delete)\s+(\S[^\r\n]*)/
 
       protected
 
