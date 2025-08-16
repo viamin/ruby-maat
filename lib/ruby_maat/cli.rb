@@ -2,6 +2,8 @@
 
 require "optparse"
 require "date"
+require_relative "generators/git_generator"
+require_relative "generators/svn_generator"
 
 module RubyMaat
   # Command Line Interface - Ruby port of code-maat.cmd-line
@@ -23,8 +25,12 @@ module RubyMaat
 
       validate_required_options!
 
-      app = App.new(@options)
-      app.run
+      if @options[:generate_log]
+        handle_log_generation
+      else
+        app = App.new(@options)
+        app.run
+      end
     rescue OptionParser::InvalidOption, OptionParser::MissingArgument => e
       warn "Error: #{e.message}"
       warn usage
@@ -40,6 +46,48 @@ module RubyMaat
     end
 
     private
+
+    def handle_log_generation
+      generator = create_log_generator
+
+      if @options[:interactive]
+        generator.interactive_generate
+      else
+        output_file = @options[:save_log]
+        preset_options = get_preset_options if @options[:preset]
+
+        generator.generate_log(output_file, **(preset_options || {}))
+
+        if output_file
+          puts "Log generated: #{output_file}"
+        else
+          puts "Log generated to stdout"
+        end
+      end
+    end
+
+    def create_log_generator
+      case @options[:version_control]
+      when "git", "git2"
+        RubyMaat::Generators::GitGenerator.new(".", @options)
+      when "svn"
+        RubyMaat::Generators::SvnGenerator.new(".", @options)
+      else
+        raise ArgumentError, "Log generation not yet supported for #{@options[:version_control]}"
+      end
+    end
+
+    def get_preset_options
+      generator = create_log_generator
+      presets = generator.available_presets
+
+      unless presets.key?(@options[:preset])
+        available = presets.keys.join(", ")
+        raise ArgumentError, "Unknown preset '#{@options[:preset]}'. Available: #{available}"
+      end
+
+      presets[@options[:preset]][:options]
+    end
 
     def build_option_parser
       OptionParser.new do |opts|
@@ -113,6 +161,23 @@ module RubyMaat
           @options[:max_changeset_size] = max_size
         end
 
+        # Log generation options
+        opts.on("--generate-log", "Generate log file instead of running analysis") do
+          @options[:generate_log] = true
+        end
+
+        opts.on("--save-log FILENAME", "Save generated log to file") do |filename|
+          @options[:save_log] = filename
+        end
+
+        opts.on("--interactive", "Use interactive mode for log generation") do
+          @options[:interactive] = true
+        end
+
+        opts.on("--preset PRESET", "Use a preset configuration for log generation") do |preset|
+          @options[:preset] = preset
+        end
+
         # Analysis-specific options
         opts.on("-e", "--expression-to-match MATCH_EXPRESSION",
           "A regex to match against commit messages. Used with -messages analyses") do |expression|
@@ -158,7 +223,10 @@ module RubyMaat
 
         This is Ruby Maat, a Ruby port of Code Maat - a program used to collect statistics from a VCS.
 
-        Usage: ruby-maat -l log-file -c vcs-type [options]
+        Usage: 
+          ruby-maat -l log-file -c vcs-type [options]           # Run analysis on existing log
+          ruby-maat --generate-log -c vcs-type [options]        # Generate log file
+          ruby-maat --generate-log --interactive -c vcs-type    # Interactive log generation
 
         Options:
       BANNER
@@ -170,7 +238,12 @@ module RubyMaat
 
     def validate_required_options!
       missing = []
-      missing << "log file (-l/--log)" unless @options[:log]
+
+      # Log file is only required when not generating logs
+      unless @options[:generate_log] || @options[:log]
+        missing << "log file (-l/--log)"
+      end
+
       missing << "version control system (-c/--version-control)" unless @options[:version_control]
 
       raise ArgumentError, "Missing required options: #{missing.join(", ")}" unless missing.empty?
