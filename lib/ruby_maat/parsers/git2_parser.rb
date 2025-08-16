@@ -16,7 +16,7 @@ module RubyMaat
     # 10      5       lib/example.rb
     class Git2Parser < BaseParser
       COMMIT_SEPARATOR = /^--([a-z0-9]+)--(\d{4}-\d{2}-\d{2})--([^\r\n]+)$/
-      CHANGE_PATTERN = /^(-|\d+)(?:\t+| +)(-|\d+)(?:\t+| +)([^\r\n]*)$/
+      CHANGE_PATTERN = /^(-|\d+)[\t ]{1,10}(-|\d+)[\t ]{1,10}([^\r\n]*)$/
 
       protected
 
