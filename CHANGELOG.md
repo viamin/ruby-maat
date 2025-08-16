@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.1](https://github.com/viamin/ruby-maat/compare/v1.1.0...v1.1.1) (2025-08-16)
+
+
+### Bug Fixes
+
+* add release-commit-message-scope configuration for CI ([59f1af1](https://github.com/viamin/ruby-maat/commit/59f1af1837cec33bed85f7a11bf0d56c9edb0a29))
+* add release-commit-message-scope configuration for CI ([e580a05](https://github.com/viamin/ruby-maat/commit/e580a05c489d8a393c75d199ed01191591d84574))
+
 ## [1.1.0](https://github.com/viamin/ruby-maat/compare/v1.0.0...v1.1.0) (2025-08-16)
 
 
