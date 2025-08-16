@@ -1,11 +1,6 @@
 # Ruby Maat
 
-[![Gem Version](https://badge.fury.io/rb/ruby-maat.svg)](https://badge.fury.io/rb/ruby-maat)
-[![Build Status](https://github.com/viamin/ruby-maat/workflows/CI/badge.svg)](https://github.com/viamin/ruby-maat/actions)
-
 Ruby Maat is a command line tool used to mine and analyze data from version-control systems (VCS). It's a Ruby port of the original [Code Maat](https://github.com/adamtornhill/code-maat) by Adam Tornhill.
-
-Ruby Maat was developed to accompany the discussions in the books [Your Code as a Crime Scene](https://pragprog.com/titles/atcrime/your-code-as-a-crime-scene) and [Software Design X-Rays](https://pragprog.com/titles/atevol/software-design-x-rays).
 
 **Note:** The analyses have evolved into [CodeScene](https://codescene.io/), which automates all the analyses found in Ruby Maat and several new ones.
 
@@ -14,11 +9,13 @@ Ruby Maat was developed to accompany the discussions in the books [Your Code as 
 Ruby Maat is designed as a **drop-in replacement** for the original Code Maat. It supports:
 
 - ✅ Identical command-line arguments
-- ✅ Same VCS log file formats  
+- ✅ Same VCS log file formats*
 - ✅ Compatible CSV output format
 - ✅ All original analysis types
 
-Simply replace `java -jar code-maat.jar` with `ruby-maat` in your existing scripts!
+`*` In theory. I've only tested with git.
+
+Simply replace `java -jar code-maat.jar` with `ruby-maat` in your existing scripts.
 
 ## Installation
 
@@ -49,17 +46,7 @@ rake install
 - Ruby 3.2 or later
 - No external dependencies beyond the gem requirements
 
-## The ideas behind Code Maat
-
-To understand large-scale software systems we need to look at their evolution. The history of our system provides us with data we cannot derive from a single snapshot of the source code. Instead VCS data blends technical, social and organizational information along a temporal axis that let us map out our interaction patterns in the code. Analyzing these patterns gives us early warnings on potential design issues and development bottlenecks, as well as suggesting new modularities based on actual interactions with the code. Addressing these issues saves costs, simplifies maintenance and let us evolve our systems in the direction of how we actually work with the code.
-
-### About the name
-
-Maat was a goddess in ancient Egyptian myth. She was the one who gave us order out of the initial chaos in the universe. Code Maat hopes to continue the work of Maat, albeit on a smaller basis, by highlighting code with chaotic development practices and suggest the directions of future refactorings to bring order to it. Further, maat was used in ancient Egypt as a concept of truth. And metrics never lie (except when they do).
-
 ## License
-
-Copyright © 2013 Adam Tornhill
 
 Distributed under the [GNU General Public License v3.0](http://www.gnu.org/licenses/gpl.html).
 
@@ -268,20 +255,6 @@ By using the techniques from [Your Code as a Crime Scene](https://pragprog.com/b
 
 ![code age visualized](doc/imgs/code_age_sample.png).
 
-### Visualise your Results
-
-Ruby Maat doesn't include any visualizations itself. However, you do have a bunch of options.
-
-One option is [CodeScene](http://www.empear.com/#empear-products) which is [free for open source](https://codescene.io/) and delivers all these analyses as a service. CodeScene is also available in an [on-premise version](https://codescene.com/pricing). CodeScene is a complete application with automated repository mining, visualizations, and is built around the ideas prototyped in the original Code Maat.
-
-I also present a whole suite of different visualization techniques and options in [Your Code as a Crime Scene](https://pragprog.com/book/atcrime/your-code-as-a-crime-scene), so do check out the book if you want to dive deeper. You can also look at some of the basic tools I've open sourced such as [Metrics Tree Map](https://github.com/adamtornhill/MetricsTreeMap):
-
-![coupling visualized](doc/imgs/tree_map_sample.png).
-
-Yet another alternative is to save the generated CSV to a file and import it into a spreadsheet program such as OpenOffice or Excel. That allows us to generate charts such as the ones below:
-
-![coupling visualized](doc/imgs/coupling_sample.png).
-
 ## Code churn measures
 
 Code churn is related to post-release defects. Modules with higher churn tend to have more defects. There are several different aspects of code churn. I intend to support several of them in Code Maat.
@@ -367,18 +340,6 @@ holistic whole by aggregating all file contributions for the matches.
 ### Intermediate results
 
 Code Maat supports an `identity` analysis. By using this switch, Code Maat will output the intermediate parse result of the raw VCS file. This can be useful either as a debug aid or as input to other tools.
-
-### Ruby Maat Benefits
-
-Ruby Maat offers several advantages over the original Java/Clojure version:
-
-- **Faster startup**: No JVM startup time overhead
-- **Better memory efficiency**: Ruby's garbage collection typically uses less memory
-- **Easier installation**: No Java dependencies required  
-- **Native Ruby integration**: Can be used as a library in Ruby projects
-- **Simpler deployment**: Single gem installation vs JAR + Java dependencies
-
-For very large datasets, the original Java version may still have performance advantages, but for most repositories, Ruby Maat provides comparable performance with much better usability.
 
 ## Limitations
 
@@ -480,12 +441,4 @@ bundle exec standardrb --fix
 
 ## Acknowledgments
 
-Ruby Maat is a Ruby port of the original [Code Maat](https://github.com/adamtornhill/code-maat) by **Adam Tornhill**. The original Code Maat was written in Clojure and has been an invaluable tool for software archaeology and code analysis.
-
-Special thanks to Adam Tornhill for:
-
-- Creating the original Code Maat and pioneering these analysis techniques
-- Writing the foundational books "Your Code as a Crime Scene" and "Software Design X-Rays"
-- Developing CodeScene, which represents the evolution of these ideas into a comprehensive platform
-
-The Ruby port aims to make these powerful analysis techniques more accessible while maintaining full compatibility with the original tool.
+Ruby Maat is a Ruby port of the original [Code Maat](https://github.com/adamtornhill/code-maat) by Adam Tornhill.
