@@ -113,13 +113,13 @@ module RubyMaat
       private
 
       def build_git2_command(options)
-        parts = ["git log"]
+        parts = ["git", "log"]
 
         # Core git2 format options
         parts << "--all" if options[:all_branches]
         parts << "--numstat"
         parts << "--date=short"
-        parts << "--pretty=format:'--%h--%ad--%aN'"
+        parts << "--pretty=format:--%h--%ad--%aN"
         parts << "--no-renames" if options[:no_renames]
 
         # Date filtering
@@ -127,20 +127,20 @@ module RubyMaat
         parts << "--before=#{options[:until]}" if options[:until]
 
         # Author filtering
-        parts << "--author='#{options[:author]}'" if options[:author]
+        parts << "--author=#{options[:author]}" if options[:author]
 
         # Add path at the end if specified
-        parts << "-- #{options[:path]}" if options[:path]
+        parts << "--" << options[:path] if options[:path]
 
-        parts.join(" ")
+        parts
       end
 
       def build_legacy_command(options)
-        parts = ["git log"]
+        parts = ["git", "log"]
 
         # Core legacy format options
         parts << "--all" if options[:all_branches]
-        parts << "--pretty=format:'[%h] %aN %ad %s'"
+        parts << "--pretty=format:[%h] %aN %ad %s"
         parts << "--date=short"
         parts << "--numstat"
         parts << "--no-renames" if options[:no_renames]
@@ -150,12 +150,12 @@ module RubyMaat
         parts << "--before=#{options[:until]}" if options[:until]
 
         # Author filtering
-        parts << "--author='#{options[:author]}'" if options[:author]
+        parts << "--author=#{options[:author]}" if options[:author]
 
         # Add path at the end if specified
-        parts << "-- #{options[:path]}" if options[:path]
+        parts << "--" << options[:path] if options[:path]
 
-        parts.join(" ")
+        parts
       end
     end
   end
