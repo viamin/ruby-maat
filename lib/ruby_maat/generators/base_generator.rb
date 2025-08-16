@@ -51,6 +51,41 @@ module RubyMaat
         end
       end
 
+      def interactive_generate_for_analysis(analysis_name, analysis_options = {})
+        unless $stdin.tty?
+          raise "Interactive mode requires a terminal (TTY). Use --generate-log with presets instead."
+        end
+
+        puts "Log generation for #{vcs_name}"
+        puts "Repository: #{@repository_path}"
+        puts "Analysis: #{RubyMaat::AnalysisPresets.analysis_description(analysis_name)}"
+        puts
+
+        # Get analysis-specific presets
+        presets = RubyMaat::AnalysisPresets.presets_for_analysis(analysis_name)
+
+        if presets.empty?
+          puts "No presets available for #{analysis_name}"
+          options = gather_custom_options({})
+        else
+          preset_options = choose_analysis_preset(analysis_name, presets)
+          options = gather_custom_options(preset_options)
+        end
+
+        # Merge with any analysis-specific options
+        options.merge!(analysis_options)
+
+        save_log = ask_yes_no("Save log to file for future use?", false)
+
+        if save_log
+          default_filename = "#{analysis_name}_#{default_log_filename}"
+          filename = ask_string("Log filename", default_filename)
+          generate_log(filename, **options)
+        else
+          generate_log(nil, **options)
+        end
+      end
+
       protected
 
       def vcs_name
@@ -119,6 +154,23 @@ module RubyMaat
         if choice <= presets.length
           preset_name = presets.keys[choice - 1]
           presets[preset_name][:options]
+        else
+          {}
+        end
+      end
+
+      def choose_analysis_preset(analysis_name, presets)
+        puts "Available presets for #{analysis_name}:"
+        presets.each_with_index do |(name, config), index|
+          puts "  #{index + 1}. #{name} - #{config[:description]}"
+        end
+        puts "  #{presets.length + 1}. Custom - Enter custom options"
+
+        choice = ask_integer("Choose preset", 1, presets.length + 1)
+
+        if choice <= presets.length
+          preset_name = presets.keys[choice - 1]
+          presets[preset_name]
         else
           {}
         end

@@ -4,6 +4,8 @@ require "optparse"
 require "date"
 require_relative "generators/git_generator"
 require_relative "generators/svn_generator"
+require_relative "analysis_presets"
+require_relative "vcs_detector"
 
 module RubyMaat
   # Command Line Interface - Ruby port of code-maat.cmd-line
@@ -48,21 +50,81 @@ module RubyMaat
     private
 
     def handle_log_generation
-      generator = create_log_generator
-
       if @options[:interactive]
-        generator.interactive_generate
+        handle_interactive_mode
       else
+        generator = create_log_generator
         output_file = @options[:save_log]
         preset_options = get_preset_options if @options[:preset]
 
-        generator.generate_log(output_file, **(preset_options || {}))
+        log_output = generator.generate_log(output_file, **(preset_options || {}))
 
         if output_file
           puts "Log generated: #{output_file}"
-        else
-          puts "Log generated to stdout"
+          # If we saved to file and analysis is specified, run analysis on that file
+          if @options[:analysis] && @options[:analysis] != "authors"
+            puts "\n=== Running Analysis ==="
+            analysis_options = @options.merge(log: output_file)
+            app = App.new(analysis_options)
+            app.run
+          end
+        elsif log_output
+          # If no output file specified and we have an analysis, run it on the generated log
+          puts "\n=== Running Analysis ==="
+
+          require "tempfile"
+          temp_log = Tempfile.new(["ruby_maat", ".log"])
+          temp_log.write(log_output)
+          temp_log.close
+
+          analysis_options = @options.merge(log: temp_log.path)
+          app = App.new(analysis_options)
+          app.run
+
+          temp_log.unlink
         end
+      end
+    end
+
+    def handle_interactive_mode
+      unless $stdin.tty?
+        raise "Interactive mode requires a terminal (TTY). Use --generate-log with presets instead."
+      end
+
+      puts "=== Ruby Maat Interactive Mode ==="
+      puts
+
+      # Step 1: Detect or choose VCS
+      vcs_type = @options[:version_control] || detect_vcs_interactive
+
+      # Step 2: Choose analysis type
+      analysis_type = @options[:analysis] || choose_analysis_interactive
+
+      # Step 3: Generate log and run analysis
+      generator = create_log_generator_for_vcs(vcs_type)
+      log_output = generator.interactive_generate_for_analysis(analysis_type, @options)
+
+      # Step 4: Run analysis if log was generated to stdout
+      if log_output && !@options[:save_log]
+        puts "\n=== Running Analysis ==="
+
+        # Create temporary log file for analysis
+        require "tempfile"
+        temp_log = Tempfile.new(["ruby_maat", ".log"])
+        temp_log.write(log_output)
+        temp_log.close
+
+        # Run analysis
+        analysis_options = @options.merge(
+          log: temp_log.path,
+          version_control: (vcs_type == "git") ? "git2" : vcs_type,
+          analysis: analysis_type
+        )
+
+        app = App.new(analysis_options)
+        app.run
+
+        temp_log.unlink
       end
     end
 
@@ -87,6 +149,110 @@ module RubyMaat
       end
 
       presets[@options[:preset]][:options]
+    end
+
+    def create_log_generator_for_vcs(vcs_type)
+      case vcs_type
+      when "git", "git2"
+        RubyMaat::Generators::GitGenerator.new(".", @options)
+      when "svn"
+        RubyMaat::Generators::SvnGenerator.new(".", @options)
+      else
+        raise ArgumentError, "Log generation not yet supported for #{vcs_type}"
+      end
+    end
+
+    def detect_vcs_interactive
+      detected = RubyMaat::VcsDetector.detect_vcs
+
+      if detected
+        puts "Detected VCS: #{RubyMaat::VcsDetector.vcs_description(detected)}"
+        if ask_yes_no_interactive("Use detected VCS?", true)
+          return detected
+        end
+      end
+
+      choose_vcs_interactive
+    end
+
+    def choose_vcs_interactive
+      puts "Choose version control system:"
+      vcs_options = %w[git svn hg p4 tfs]
+      vcs_options.each_with_index do |vcs, index|
+        puts "  #{index + 1}. #{RubyMaat::VcsDetector.vcs_description(vcs)}"
+      end
+
+      choice = ask_integer_interactive("Choose VCS", 1, vcs_options.length)
+      vcs_options[choice - 1]
+    end
+
+    def choose_analysis_interactive
+      analyses = RubyMaat::AnalysisPresets.available_analyses
+
+      puts "Choose analysis type:"
+      analyses.each_with_index do |analysis, index|
+        puts "  #{index + 1}. #{RubyMaat::AnalysisPresets.analysis_description(analysis)}"
+      end
+
+      choice = ask_integer_interactive("Choose analysis", 1, analyses.length)
+      analyses[choice - 1]
+    end
+
+    def ask_yes_no_interactive(prompt, default = nil)
+      default_text = case default
+      when true then " [Y/n]"
+      when false then " [y/N]"
+      else " [y/n]"
+      end
+
+      loop do
+        print "#{prompt}#{default_text}: "
+        response = $stdin.gets
+        return default if response.nil?
+        response = response.chomp.downcase
+
+        case response
+        when "y", "yes"
+          return true
+        when "n", "no"
+          return false
+        when ""
+          return default unless default.nil?
+        end
+
+        puts "Please enter 'y' or 'n'"
+      end
+    end
+
+    def ask_integer_interactive(prompt, min = nil, max = nil)
+      attempts = 0
+      max_attempts = 10
+
+      loop do
+        attempts += 1
+        if attempts > max_attempts
+          raise "Too many invalid attempts. Exiting interactive mode."
+        end
+
+        print "#{prompt}: "
+        response = $stdin.gets
+        return 1 if response.nil? # Default to first option
+
+        response = response.chomp
+
+        if response.empty?
+          puts "Please enter a valid number"
+          next
+        end
+
+        begin
+          value = Integer(response)
+          return value if (min.nil? || value >= min) && (max.nil? || value <= max)
+          puts "Please enter a number between #{min} and #{max}"
+        rescue ArgumentError
+          puts "Please enter a valid number"
+        end
+      end
     end
 
     def build_option_parser
@@ -239,12 +405,21 @@ module RubyMaat
     def validate_required_options!
       missing = []
 
+      # In interactive mode, we can detect everything
+      if @options[:interactive]
+        # Interactive mode can work with no other options
+        return
+      end
+
       # Log file is only required when not generating logs
-      unless @options[:generate_log] || @options[:interactive] || @options[:log]
+      unless @options[:generate_log] || @options[:log]
         missing << "log file (-l/--log)"
       end
 
-      missing << "version control system (-c/--version-control)" unless @options[:version_control]
+      # VCS is required for non-interactive modes
+      unless @options[:version_control]
+        missing << "version control system (-c/--version-control)"
+      end
 
       raise ArgumentError, "Missing required options: #{missing.join(", ")}" unless missing.empty?
 
