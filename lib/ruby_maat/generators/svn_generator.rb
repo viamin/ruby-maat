@@ -70,7 +70,7 @@ module RubyMaat
       end
 
       def build_command(options)
-        parts = ["svn log"]
+        parts = ["svn", "log"]
 
         # Core options
         parts << "-v" if options[:verbose]
@@ -78,22 +78,28 @@ module RubyMaat
 
         # Revision range
         if options[:revision_start] && options[:revision_end]
-          parts << "-r #{options[:revision_start]}:#{options[:revision_end]}"
+          parts << "-r"
+          parts << "#{options[:revision_start]}:#{options[:revision_end]}"
         elsif options[:revision_start]
-          parts << "-r #{options[:revision_start]}:HEAD"
+          parts << "-r"
+          parts << "#{options[:revision_start]}:HEAD"
         elsif options[:since] || options[:until]
           # Date-based revision range
           revision_range = build_date_revision_range(options)
-          parts << "-r #{revision_range}" if revision_range
+          if revision_range
+            parts << "-r"
+            parts << revision_range
+          end
         end
 
         # Limit
-        parts << "-l #{options[:limit]}" if options[:limit]
+        parts << "-l"
+        parts << options[:limit].to_s if options[:limit]
 
         # URL (if specified, otherwise use current directory)
         parts << options[:url] if options[:url]
 
-        parts.join(" ")
+        parts
       end
 
       def gather_vcs_specific_options(options)
