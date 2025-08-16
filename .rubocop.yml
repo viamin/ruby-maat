@@ -13,6 +13,7 @@ AllCops:
   Exclude:
     - 'codeql-repo/**/*'
     - 'ruby-maat-codeql-db*/**/*'
+    - 'vendor/**/*'
 
 # Project-specific overrides
 Metrics/MethodLength:

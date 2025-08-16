@@ -103,14 +103,14 @@ module RubyMaat
       def execute_command(command)
         puts "Executing: #{command}" if @options[:verbose]
 
-        # Use proper shell escaping to prevent command injection
-        require "shellwords"
-        escaped_path = Shellwords.escape(@repository_path)
-        result = `cd #{escaped_path} && #{command} 2>&1`
-        exit_status = $?.exitstatus
+        # Use proper subprocess execution to prevent command injection
+        require "open3"
 
-        if exit_status != 0
-          raise "Command failed with exit code #{exit_status}: #{result}"
+        # Change to repository directory and execute command safely
+        result, error, status = Open3.capture3(command, chdir: @repository_path)
+        if status.exitstatus != 0
+          combined_output = result + error
+          raise "Command failed with exit code #{status.exitstatus}: #{combined_output}"
         end
 
         result
