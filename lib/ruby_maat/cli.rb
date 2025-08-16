@@ -25,7 +25,7 @@ module RubyMaat
 
       validate_required_options!
 
-      if @options[:generate_log]
+      if @options[:generate_log] || @options[:interactive]
         handle_log_generation
       else
         app = App.new(@options)
@@ -240,7 +240,7 @@ module RubyMaat
       missing = []
 
       # Log file is only required when not generating logs
-      unless @options[:generate_log] || @options[:log]
+      unless @options[:generate_log] || @options[:interactive] || @options[:log]
         missing << "log file (-l/--log)"
       end
 

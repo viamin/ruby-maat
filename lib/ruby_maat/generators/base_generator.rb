@@ -29,6 +29,10 @@ module RubyMaat
       end
 
       def interactive_generate
+        unless $stdin.tty?
+          raise "Interactive mode requires a terminal (TTY). Use --generate-log with presets instead."
+        end
+
         puts "Interactive log generation for #{vcs_name}"
         puts "Repository: #{@repository_path}"
         puts
@@ -147,13 +151,29 @@ module RubyMaat
       def ask_string(prompt, default = nil)
         default_text = default ? " [#{default}]" : ""
         print "#{prompt}#{default_text}: "
-        response = $stdin.gets.chomp
+        response = $stdin.gets
+        return default || "" if response.nil?
+        response = response.chomp
         response.empty? ? (default || "") : response
       end
 
       def ask_integer(prompt, min = nil, max = nil)
+        attempts = 0
+        max_attempts = 10
+
         loop do
+          attempts += 1
+          if attempts > max_attempts
+            raise "Too many invalid attempts. Exiting interactive mode."
+          end
+
           response = ask_string(prompt)
+
+          # Handle empty response or non-interactive mode
+          if response.nil? || response.empty?
+            puts "Please enter a valid number"
+            next
+          end
 
           begin
             value = Integer(response)
