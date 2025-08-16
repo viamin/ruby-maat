@@ -76,13 +76,13 @@ module RubyMaat
           results = []
 
           entity_authors.each do |entity, authors|
-            total_revisions = authors.values.map(&:size).sum
+            total_revisions = authors.values.sum(&:size)
             next if total_revisions < min_revs
 
             # Find author with most revisions
             main_author, revisions = authors.max_by { |_author, revs| revs.size }
 
-            total_revisions = authors.values.map(&:size).sum
+            total_revisions = authors.values.sum(&:size)
 
             results << {
               entity: entity,
@@ -122,14 +122,14 @@ module RubyMaat
           results = []
 
           entity_contributions.each do |entity, authors|
-            total_revisions = authors.values.map(&:size).sum
+            total_revisions = authors.values.sum(&:size)
             next if total_revisions < min_revs
 
             # Calculate fractal value: 1 - sum(p_i^2) where p_i is proportion of each author
-            sum_of_squares = authors.values.map do |revisions|
+            sum_of_squares = authors.values.sum do |revisions|
               proportion = revisions.size.to_f / total_revisions
               proportion**2
-            end.sum
+            end
 
             fractal_value = 1.0 - sum_of_squares
 

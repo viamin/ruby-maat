@@ -105,7 +105,7 @@ module RubyMaat
           end
 
           # Filter by minimum revisions and format results
-          filtered_results = results.values.map do |result|
+          filtered_results = results.values.filter_map do |result|
             next if result[:revisions].size < min_revs
 
             {
@@ -114,7 +114,7 @@ module RubyMaat
               deleted: result[:deleted],
               commits: result[:revisions].size
             }
-          end.compact
+          end
 
           # Sort by total churn descending
           filtered_results.sort_by! { |r| -(r[:added] + r[:deleted]) }

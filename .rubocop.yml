@@ -3,12 +3,17 @@ inherit_gem:
   standard: config/base.yml
 
 plugins:
+  - rubocop-performance
   - rubocop-rake
   - rubocop-rspec
 
 AllCops:
   TargetRubyVersion: 3.2
   NewCops: enable
+  Exclude:
+    - 'codeql-repo/**/*'
+    - 'ruby-maat-codeql-db*/**/*'
+    - 'vendor/**/*'
 
 # Project-specific overrides
 Metrics/MethodLength:
@@ -46,3 +51,20 @@ RSpec/MultipleExpectations:
 
 RSpec/NestedGroups:
   Max: 5
+
+# Allow integration tests to use descriptive names instead of method names
+RSpec/DescribeMethod:
+  Exclude:
+    - "spec/integration/**/*"
+    - "spec/ruby_maat/generators/analysis_integration_spec.rb"
+
+# Allow integration tests to use custom file naming patterns
+RSpec/SpecFilePathFormat:
+  Exclude:
+    - "spec/integration/**/*"
+    - "spec/ruby_maat/generators/analysis_integration_spec.rb"
+
+# Allow instance variables in complex integration tests that need directory management
+RSpec/InstanceVariable:
+  Exclude:
+    - "spec/integration/**/*"
