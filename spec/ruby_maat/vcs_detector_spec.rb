@@ -88,11 +88,6 @@ RSpec.describe RubyMaat::VcsDetector do
         skip "Mocking command execution with $? is complex and not critical for current issue"
       end
 
-      it "tries multiple commands in sequence" do
-        # Skip this test as it requires complex mocking of command execution
-        skip "Mocking command execution with $? is complex and not critical for current issue"
-      end
-
       it "handles directory change errors gracefully" do
         # Mock Dir.chdir to raise an error
         allow(Dir).to receive(:chdir).and_raise(Errno::ENOENT)

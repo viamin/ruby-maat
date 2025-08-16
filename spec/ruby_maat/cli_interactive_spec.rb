@@ -6,14 +6,16 @@ require "tmpdir"
 require "stringio"
 
 RSpec.describe RubyMaat::CLI do
-  let(:temp_dir) { Dir.mktmpdir }
   let(:cli) { described_class.new }
-  let(:original_dir) { Dir.pwd }
-
   let(:mock_generator) { instance_double(RubyMaat::Generators::GitGenerator) }
   let(:mock_app) { instance_double(RubyMaat::App) }
 
+  attr_reader :temp_dir
+
   before do
+    @temp_dir = Dir.mktmpdir
+    @original_dir = Dir.pwd
+
     # Mock all external dependencies completely to avoid directory issues
     allow(RubyMaat::Generators::GitGenerator).to receive(:new).and_return(mock_generator)
     allow(mock_generator).to receive_messages(generate_log: "mock log", interactive_generate_for_analysis: "mock log", available_presets: {
@@ -64,8 +66,6 @@ RSpec.describe RubyMaat::CLI do
 
   describe "log generation with analysis execution" do
     let(:mock_log_output) { "--abc123--2023-01-01--Test User\n1\t0\ttest.txt\n" }
-    let(:mock_generator) { instance_double(RubyMaat::Generators::GitGenerator) }
-    let(:mock_app) { instance_double(RubyMaat::App) }
 
     before do
       # Mock generator creation and execution
@@ -118,11 +118,11 @@ RSpec.describe RubyMaat::CLI do
   end
 
   describe "preset handling" do
-    let(:mock_generator) { instance_double(RubyMaat::Generators::GitGenerator) }
+    let(:preset_generator) { instance_double(RubyMaat::Generators::GitGenerator) }
 
     before do
-      allow(RubyMaat::Generators::GitGenerator).to receive(:new).and_return(mock_generator)
-      allow(mock_generator).to receive(:available_presets).and_return({
+      allow(RubyMaat::Generators::GitGenerator).to receive(:new).and_return(preset_generator)
+      allow(preset_generator).to receive(:available_presets).and_return({
         "git2-format" => {options: {}}
       })
     end
@@ -133,7 +133,7 @@ RSpec.describe RubyMaat::CLI do
     end
 
     it "accepts valid presets for Git" do
-      allow(mock_generator).to receive(:generate_log).and_return("mock log")
+      allow(preset_generator).to receive(:generate_log).and_return("mock log")
 
       expect { cli.run(["--generate-log", "--preset", "git2-format", "-c", "git"]) }
         .not_to raise_error
@@ -158,7 +158,6 @@ RSpec.describe RubyMaat::CLI do
 
   describe "traditional mode compatibility" do
     let(:log_file) { File.join(temp_dir, "existing.log") }
-    let(:mock_app) { instance_double(RubyMaat::App) }
 
     before do
       # Create a simple log file

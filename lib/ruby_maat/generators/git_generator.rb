@@ -119,7 +119,7 @@ module RubyMaat
         parts << "--all" if options[:all_branches]
         parts << "--numstat"
         parts << "--date=short"
-        parts << "--pretty=format:--%h--%ad--%aN"
+        parts << "--pretty=format:'--%h--%ad--%aN'"
         parts << "--no-renames" if options[:no_renames]
 
         # Date filtering
@@ -132,7 +132,7 @@ module RubyMaat
         # Add path at the end if specified
         parts << "--" << options[:path] if options[:path]
 
-        parts
+        parts.join(" ")
       end
 
       def build_legacy_command(options)
@@ -140,7 +140,7 @@ module RubyMaat
 
         # Core legacy format options
         parts << "--all" if options[:all_branches]
-        parts << "--pretty=format:[%h] %aN %ad %s"
+        parts << "--pretty=format:'[%h] %aN %ad %s'"
         parts << "--date=short"
         parts << "--numstat"
         parts << "--no-renames" if options[:no_renames]
@@ -155,7 +155,7 @@ module RubyMaat
         # Add path at the end if specified
         parts << "--" << options[:path] if options[:path]
 
-        parts
+        parts.join(" ")
       end
     end
   end

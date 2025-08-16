@@ -196,7 +196,12 @@ RSpec.describe RubyMaat::Generators::GitGenerator, "Analysis Integration" do
       # Should not crash, just show "No presets available"
       expect {
         generator.interactive_generate_for_analysis("nonexistent-analysis")
-      }.to output(/No presets available/).to_stdout.and not_raise_error
+      }.to output(/No presets available/).to_stdout
+
+      # Separately test that it doesn't raise error
+      expect {
+        generator.interactive_generate_for_analysis("nonexistent-analysis")
+      }.not_to raise_error
     end
   end
 

@@ -6,13 +6,22 @@ require "tmpdir"
 require "stringio"
 
 RSpec.describe RubyMaat::CLI, "Enhanced Ruby Maat Workflow", type: :integration do
-  let(:temp_dir) { Dir.mktmpdir }
-
-  let(:original_dir) { Dir.pwd }
+  def setup_directories
+    # Ensure we're in a valid directory before starting
+    begin
+      @original_dir = Dir.pwd
+    rescue Errno::ENOENT
+      Dir.chdir("/")
+      @original_dir = "/"
+    end
+    @temp_dir = Dir.mktmpdir
+  end
 
   before do
+    setup_directories
+
     # Create a more realistic mock git repository with multiple commits
-    Dir.chdir(temp_dir) do
+    Dir.chdir(@temp_dir) do
       `git init 2>/dev/null`
 
       # Create directories and initial files
@@ -38,16 +47,19 @@ RSpec.describe RubyMaat::CLI, "Enhanced Ruby Maat Workflow", type: :integration 
       `git -c user.name="Alice" -c user.email="alice@example.com" commit -m "Add utility class" 2>/dev/null`
     end
 
-    Dir.chdir(temp_dir)
+    Dir.chdir(@temp_dir)
   end
 
   after do
     begin
-      Dir.chdir(original_dir) if original_dir && Dir.exist?(original_dir)
+      # Always change back to original dir before cleaning up temp_dir
+      Dir.chdir(@original_dir) if @original_dir && Dir.exist?(@original_dir)
     rescue
-      # If original_dir doesn't exist, just continue
+      # If original_dir doesn't exist, change to a safe directory
+      Dir.chdir("/")
     end
-    FileUtils.rm_rf(temp_dir) if temp_dir && Dir.exist?(temp_dir)
+    # Now safe to remove temp_dir since we're no longer in it
+    FileUtils.rm_rf(@temp_dir) if @temp_dir && Dir.exist?(@temp_dir)
   end
 
   describe "VCS auto-detection integration" do
