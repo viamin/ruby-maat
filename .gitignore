@@ -15,6 +15,12 @@ doc/
 # Test artifacts
 .rspec_status
 
+# CodeQL analysis artifacts
+codeql-repo/
+*codeql*.csv
+*codeql*.sarif
+ruby-maat-codeql-db*/
+
 # Coverage reports
 coverage/
 .resultset.json

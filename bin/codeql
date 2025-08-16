@@ -1,0 +1,61 @@
+#!/bin/bash
+
+# CodeQL Security Analysis Script for Ruby Maat
+# This script runs the same security analysis as GitHub Actions
+
+set -e
+
+echo "🔍 Running CodeQL Security Analysis for Ruby Maat"
+
+# Colors for output
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+RED='\033[0;31m'
+NC='\033[0m' # No Color
+
+# Create or update CodeQL database
+echo -e "${YELLOW}📊 Creating CodeQL database...${NC}"
+codeql database create ruby-maat-codeql-db --language=ruby --source-root=. --overwrite
+
+# Run code injection analysis
+echo -e "${YELLOW}🛡️  Checking for code injection vulnerabilities...${NC}"
+codeql database analyze ruby-maat-codeql-db \
+  --format=csv \
+  --output=codeql-injection.csv \
+  codeql-repo/ruby/ql/src/queries/security/cwe-094/CodeInjection.ql
+
+# Run ReDoS analysis
+echo -e "${YELLOW}⚡ Checking for Regular Expression DoS vulnerabilities...${NC}"
+codeql database analyze ruby-maat-codeql-db \
+  --format=csv \
+  --output=codeql-redos.csv \
+  codeql-repo/ruby/ql/src/queries/security/cwe-1333/PolynomialReDoS.ql
+
+# Check results
+echo -e "${GREEN}📋 Analysis Results:${NC}"
+
+echo -n "Code Injection vulnerabilities: "
+INJECTION_COUNT=$(grep -v "^\"" codeql-injection.csv | wc -l | tr -d ' ')
+if [ "$INJECTION_COUNT" -eq 0 ]; then
+    echo -e "${GREEN}✅ None found${NC}"
+else
+    echo -e "${RED}❌ $INJECTION_COUNT found${NC}"
+    echo "See codeql-injection.csv for details"
+fi
+
+echo -n "ReDoS vulnerabilities in Ruby Maat code: "
+# Filter out test files from the codeql-repo
+REDOS_COUNT=$(grep -v "^\"" codeql-redos.csv | grep -v "codeql-repo" | wc -l | tr -d ' ')
+if [ "$REDOS_COUNT" -eq 0 ]; then
+    echo -e "${GREEN}✅ None found${NC}"
+else
+    echo -e "${RED}❌ $REDOS_COUNT found${NC}"
+    echo "See codeql-redos.csv for details"
+fi
+
+echo -e "${GREEN}🎉 CodeQL analysis complete!${NC}"
+
+# Information
+echo -e "${YELLOW}💡 Note: codeql-repo directory is excluded from RuboCop/StandardRB scanning${NC}"
+echo -e "${YELLOW}💡 Tip: You can remove the large codeql-repo directory after analysis${NC}"
+echo "   rm -rf codeql-repo"

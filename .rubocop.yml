@@ -10,6 +10,9 @@ plugins:
 AllCops:
   TargetRubyVersion: 3.2
   NewCops: enable
+  Exclude:
+    - 'codeql-repo/**/*'
+    - 'ruby-maat-codeql-db*/**/*'
 
 # Project-specific overrides
 Metrics/MethodLength:

@@ -14,7 +14,7 @@ module RubyMaat
     # rev: 124 author: Jane Smith date: 2015-06-16 files:
     # lib/helper.py
     class MercurialParser < BaseParser
-      ENTRY_PATTERN = /^rev:\s+(\d+)\s+author:\s+([^0-9]+)\s+date:\s+(\d{4}-\d{2}-\d{2})\s+files:$/
+      ENTRY_PATTERN = /^rev: (\d+) author: ([^0-9][^:]*?) date: (\d{4}-\d{2}-\d{2}) files:$/
 
       protected
 
