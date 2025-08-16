@@ -76,13 +76,13 @@ module RubyMaat
         parts << "-v" if options[:verbose]
         parts << "--xml" if options[:xml]
 
-        # Revision range
+        # Revision range (with validation and escaping)
         if options[:revision_start] && options[:revision_end]
           parts << "-r"
-          parts << "#{options[:revision_start]}:#{options[:revision_end]}"
+          parts << "#{validate_revision(options[:revision_start])}:#{validate_revision(options[:revision_end])}"
         elsif options[:revision_start]
           parts << "-r"
-          parts << "#{options[:revision_start]}:HEAD"
+          parts << "#{validate_revision(options[:revision_start])}:HEAD"
         elsif options[:since] || options[:until]
           # Date-based revision range
           revision_range = build_date_revision_range(options)
@@ -96,10 +96,10 @@ module RubyMaat
         parts << "-l"
         parts << options[:limit].to_s if options[:limit]
 
-        # URL (if specified, otherwise use current directory)
-        parts << options[:url] if options[:url]
+        # URL (if specified, otherwise use current directory) (with shell escaping)
+        parts << shell_escape(options[:url]) if options[:url]
 
-        parts
+        parts.join(" ")
       end
 
       def gather_vcs_specific_options(options)
@@ -163,11 +163,11 @@ module RubyMaat
 
       def build_date_revision_range(options)
         if options[:since] && options[:until]
-          "{#{options[:since]}}:{#{options[:until]}}"
+          "{#{validate_date(options[:since])}}:{#{validate_date(options[:until])}}"
         elsif options[:since]
-          "{#{options[:since]}}:HEAD"
+          "{#{validate_date(options[:since])}}:HEAD"
         elsif options[:until]
-          "1:{#{options[:until]}}"
+          "1:{#{validate_date(options[:until])}}"
         end
       end
 
@@ -176,6 +176,25 @@ module RubyMaat
         Date.parse(date_str).strftime("%Y%m%d")
       rescue Date::Error
         date_str
+      end
+
+      # Security methods to prevent command injection
+      def shell_escape(value)
+        return value unless value.is_a?(String)
+        require "shellwords"
+        Shellwords.escape(value)
+      end
+
+      def validate_revision(revision)
+        # Only allow alphanumeric characters, dots, and basic revision keywords
+        return revision if revision.to_s.match?(/\A[a-zA-Z0-9._-]+\z/)
+        raise ArgumentError, "Invalid revision format: #{revision}"
+      end
+
+      def validate_date(date)
+        # Validate date format and prevent injection
+        return date if date.to_s.match?(/\A\d{4}-?\d{2}-?\d{2}\z/)
+        raise ArgumentError, "Invalid date format: #{date}"
       end
     end
   end

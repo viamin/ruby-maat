@@ -103,7 +103,10 @@ module RubyMaat
       def execute_command(command)
         puts "Executing: #{command}" if @options[:verbose]
 
-        result = `cd "#{@repository_path}" && #{command} 2>&1`
+        # Use proper shell escaping to prevent command injection
+        require "shellwords"
+        escaped_path = Shellwords.escape(@repository_path)
+        result = `cd #{escaped_path} && #{command} 2>&1`
         exit_status = $?.exitstatus
 
         if exit_status != 0

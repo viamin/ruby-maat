@@ -122,15 +122,15 @@ module RubyMaat
         parts << "--pretty=format:'--%h--%ad--%aN'"
         parts << "--no-renames" if options[:no_renames]
 
-        # Date filtering
-        parts << "--after=#{options[:since]}" if options[:since]
-        parts << "--before=#{options[:until]}" if options[:until]
+        # Date filtering (with validation and shell escaping)
+        parts << "--after=#{shell_escape(validate_date(options[:since]))}" if options[:since]
+        parts << "--before=#{shell_escape(validate_date(options[:until]))}" if options[:until]
 
-        # Author filtering
-        parts << "--author=#{options[:author]}" if options[:author]
+        # Author filtering (with shell escaping)
+        parts << "--author=#{shell_escape(options[:author])}" if options[:author]
 
-        # Add path at the end if specified
-        parts << "--" << options[:path] if options[:path]
+        # Add path at the end if specified (with shell escaping)
+        parts << "--" << shell_escape(options[:path]) if options[:path]
 
         parts.join(" ")
       end
@@ -145,17 +145,31 @@ module RubyMaat
         parts << "--numstat"
         parts << "--no-renames" if options[:no_renames]
 
-        # Date filtering
-        parts << "--after=#{options[:since]}" if options[:since]
-        parts << "--before=#{options[:until]}" if options[:until]
+        # Date filtering (with validation and shell escaping)
+        parts << "--after=#{shell_escape(validate_date(options[:since]))}" if options[:since]
+        parts << "--before=#{shell_escape(validate_date(options[:until]))}" if options[:until]
 
-        # Author filtering
-        parts << "--author=#{options[:author]}" if options[:author]
+        # Author filtering (with shell escaping)
+        parts << "--author=#{shell_escape(options[:author])}" if options[:author]
 
-        # Add path at the end if specified
-        parts << "--" << options[:path] if options[:path]
+        # Add path at the end if specified (with shell escaping)
+        parts << "--" << shell_escape(options[:path]) if options[:path]
 
         parts.join(" ")
+      end
+
+      # Security methods to prevent command injection
+      def shell_escape(value)
+        return value unless value.is_a?(String)
+        # Use Shellwords.escape for proper shell escaping
+        require "shellwords"
+        Shellwords.escape(value)
+      end
+
+      def validate_date(date)
+        # Validate date format and prevent injection
+        return date if date.to_s.match?(/\A\d{4}-\d{2}-\d{2}\z/)
+        raise ArgumentError, "Invalid date format: #{date}"
       end
     end
   end

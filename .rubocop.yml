@@ -3,6 +3,7 @@ inherit_gem:
   standard: config/base.yml
 
 plugins:
+  - rubocop-performance
   - rubocop-rake
   - rubocop-rspec
 
