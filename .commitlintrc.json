@@ -29,7 +29,8 @@
         "grouper",
         "core",
         "deps",
-        "ci"
+        "ci",
+        "main"
       ]
     ],
     "scope-empty": [0, "never"],
