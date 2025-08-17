@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.4](https://github.com/viamin/ruby-maat/compare/v1.1.3...v1.1.4) (2025-08-17)
+
+
+### Bug Fixes
+
+* version info for automations ([6d1dc43](https://github.com/viamin/ruby-maat/commit/6d1dc43f1b3bf666ca54b7d3c5999d63a7964cab))
+
 ## [1.1.3](https://github.com/viamin/ruby-maat/compare/v1.1.2...v1.1.3) (2025-08-17)
 
 
