@@ -21,7 +21,7 @@
         {"type": "chore", "section": "Miscellaneous", "hidden": false},
         {"type": "style", "section": "Code Style", "hidden": false}
       ],
-      "extra-files": []
+      "extra-files": ["lib/ruby_maat/version.rb"]
     }
   }
 }
