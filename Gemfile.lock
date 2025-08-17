@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    ruby-maat (1.1.3)
+    ruby-maat (1.2.0)
       csv (~> 3.2)
       rexml (~> 3.2)
       rover-df (~> 0.3)
