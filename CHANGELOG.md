@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.2](https://github.com/viamin/ruby-maat/compare/v1.1.1...v1.1.2) (2025-08-17)
+
+
+### Bug Fixes
+
+* update permissions in CI workflows for better access control ([9c30839](https://github.com/viamin/ruby-maat/commit/9c30839ea3c8f6c7fee56d911231ebc27faa35df))
+* update permissions in CI workflows for better access control ([be49302](https://github.com/viamin/ruby-maat/commit/be49302c98a16b528ebf56137667998382ce56c4))
+
 ## [1.1.1](https://github.com/viamin/ruby-maat/compare/v1.1.0...v1.1.1) (2025-08-16)
 
 
