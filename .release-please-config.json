@@ -24,6 +24,10 @@
       ],
       "extra-files": [
         {
+          "type": "ruby",
+          "path": "lib/ruby_maat/version.rb"
+        },
+        {
           "type": "generic",
           "path": "ruby-maat.gemspec",
           "glob": "spec.version = \"*\""
