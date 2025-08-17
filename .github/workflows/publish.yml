@@ -35,7 +35,6 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           release-type: ruby
-          config-file: .release-please-config.json
 
   publish:
     runs-on: ubuntu-latest
