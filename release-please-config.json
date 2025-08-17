@@ -21,7 +21,12 @@
         {"type": "chore", "section": "Miscellaneous", "hidden": false},
         {"type": "style", "section": "Code Style", "hidden": false}
       ],
-      "extra-files": ["lib/ruby_maat/version.rb"]
+      "extra-files": [
+        {
+          "path": "lib/ruby_maat/version.rb",
+          "type": "generic"
+        }
+      ]
     }
   }
 }
