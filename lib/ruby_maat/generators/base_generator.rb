@@ -101,6 +101,9 @@ module RubyMaat
       end
 
       def execute_command(command)
+        # Show command preview and ask for confirmation
+        show_command_preview(command)
+
         puts "Executing: #{command}" if @options[:verbose]
 
         # Use proper subprocess execution to prevent command injection
@@ -261,6 +264,25 @@ module RubyMaat
 
           puts "Please enter 'y' or 'n'"
         end
+      end
+
+      def show_command_preview(command)
+        # Skip preview in non-interactive modes, when quiet is set, or during tests
+        return if @options[:quiet] || !$stdin.tty? || test_environment?
+
+        puts "\n" + "=" * 60
+        puts "COMMAND PREVIEW"
+        puts "=" * 60
+        puts "Repository: #{@repository_path}"
+        puts "Command:    #{command}"
+        puts "=" * 60
+        puts "\nPress Enter to execute this command..."
+        $stdin.gets
+      end
+
+      def test_environment?
+        # Check if we're in a test environment
+        !!(defined?(RSpec) || ENV["RUBY_MAAT_TEST"] == "true" || ENV["RSPEC_CORE_PID"])
       end
     end
   end

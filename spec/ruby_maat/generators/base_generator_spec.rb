@@ -122,4 +122,141 @@ RSpec.describe RubyMaat::Generators::BaseGenerator do
       end
     end
   end
+
+  describe "command preview functionality" do
+    describe "#show_command_preview" do
+      let(:command) { "git log --all --numstat" }
+
+      context "when in interactive TTY mode (simulated)" do
+        it "displays command preview and waits for Enter" do
+          generator = TestGenerator.new(temp_dir)
+
+          # Mock all the conditions to enable preview but stub stdin.gets
+          allow(generator).to receive(:test_environment?).and_return(false)
+          allow($stdin).to receive_messages(tty?: true, gets: "\n")
+
+          expect { generator.send(:show_command_preview, command) }.to output(
+            a_string_including(
+              "COMMAND PREVIEW",
+              "Repository: #{temp_dir}",
+              "Command:    #{command}",
+              "Press Enter to execute this command..."
+            )
+          ).to_stdout
+
+          expect($stdin).to have_received(:gets).once
+        end
+
+        it "includes repository path and command in preview" do
+          generator = TestGenerator.new(temp_dir)
+
+          # Mock environment and stdin
+          allow(generator).to receive(:test_environment?).and_return(false)
+          allow($stdin).to receive_messages(tty?: true, gets: "\n")
+
+          expect { generator.send(:show_command_preview, command) }.to output(
+            a_string_matching(/Repository: #{Regexp.escape(temp_dir)}/)
+          ).to_stdout
+
+          expect { generator.send(:show_command_preview, command) }.to output(
+            a_string_matching(/Command:\s+#{Regexp.escape(command)}/)
+          ).to_stdout
+        end
+      end
+
+      context "when in test environment" do
+        it "skips command preview automatically" do
+          generator = TestGenerator.new(temp_dir)
+
+          # In real test environment, test_environment? returns true automatically
+          expect { generator.send(:show_command_preview, command) }.not_to output.to_stdout
+        end
+      end
+
+      context "when in quiet mode" do
+        it "skips command preview" do
+          generator = TestGenerator.new(temp_dir, quiet: true)
+
+          expect { generator.send(:show_command_preview, command) }.not_to output.to_stdout
+        end
+      end
+
+      context "when in non-TTY mode" do
+        it "skips command preview" do
+          generator = TestGenerator.new(temp_dir)
+
+          allow($stdin).to receive(:tty?).and_return(false)
+
+          expect { generator.send(:show_command_preview, command) }.not_to output.to_stdout
+        end
+      end
+    end
+
+    describe "#test_environment?" do
+      it "detects RSpec environment" do
+        generator = TestGenerator.new(temp_dir)
+        expect(generator.send(:test_environment?)).to be true
+      end
+
+      it "detects RUBY_MAAT_TEST environment variable" do
+        generator = TestGenerator.new(temp_dir)
+
+        original_env = ENV["RUBY_MAAT_TEST"]
+        ENV["RUBY_MAAT_TEST"] = "true"
+
+        # Since RSpec is defined, this will still return true due to RSpec detection
+        # but the method includes the ENV check as well
+        expect(generator.send(:test_environment?)).to be true
+
+        ENV["RUBY_MAAT_TEST"] = original_env
+      end
+    end
+
+    describe "#execute_command with command preview" do
+      let(:command) { "echo 'test output'" }
+
+      context "when in test environment (default)" do
+        it "executes command without preview" do
+          generator = TestGenerator.new(temp_dir)
+
+          # In test environment, should skip preview
+          expect { generator.send(:execute_command, command) }.not_to output(
+            a_string_including("COMMAND PREVIEW")
+          ).to_stdout
+
+          result = generator.send(:execute_command, command)
+          expect(result.strip).to eq("test output")
+        end
+      end
+
+      context "when in interactive TTY mode (simulated)" do
+        it "shows command preview before execution" do
+          generator = TestGenerator.new(temp_dir)
+
+          # Override test environment detection and mock stdin
+          allow(generator).to receive(:test_environment?).and_return(false)
+          allow($stdin).to receive_messages(tty?: true, gets: "\n")
+
+          expect { generator.send(:execute_command, command) }.to output(
+            a_string_including("COMMAND PREVIEW", "Press Enter to execute this command...")
+          ).to_stdout
+
+          expect($stdin).to have_received(:gets).once
+        end
+      end
+
+      context "when in quiet mode" do
+        it "executes command without preview" do
+          generator = TestGenerator.new(temp_dir, quiet: true)
+
+          expect { generator.send(:execute_command, command) }.not_to output(
+            a_string_including("COMMAND PREVIEW")
+          ).to_stdout
+
+          result = generator.send(:execute_command, command)
+          expect(result.strip).to eq("test output")
+        end
+      end
+    end
+  end
 end
