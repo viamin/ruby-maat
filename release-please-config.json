@@ -1,8 +1,9 @@
 {
   "bootstrap-sha": "3801f15cf31cca8d519082ce78890efa4b5b9c65",
+  "release-type": "ruby",
   "packages": {
     ".": {
-      "release-type": "ruby",
+      "component": "ruby-maat",
       "version-file": "lib/ruby_maat/version.rb"
     }
   }
