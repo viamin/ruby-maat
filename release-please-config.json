@@ -1,10 +1,51 @@
 {
-  "bootstrap-sha": "3801f15cf31cca8d519082ce78890efa4b5b9c65",
-  "release-type": "ruby",
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
   "packages": {
     ".": {
-      "component": "ruby-maat",
-      "version-file": "lib/ruby_maat/version.rb"
+      "release-type": "ruby",
+      "package-name": "ruby-maat",
+      "changelog-sections": [
+        {
+          "type": "feat",
+          "section": "Features",
+          "hidden": false
+        },
+        {
+          "type": "fix",
+          "section": "Bug Fixes",
+          "hidden": false
+        },
+        {
+          "type": "refactor",
+          "section": "Improvements",
+          "hidden": false
+        },
+        {
+          "type": "chore",
+          "section": "Maintenance",
+          "hidden": true
+        },
+        {
+          "type": "docs",
+          "section": "Documentation",
+          "hidden": false
+        },
+        {
+          "type": "test",
+          "section": "Testing",
+          "hidden": true
+        },
+        {
+          "type": "ci",
+          "section": "CI/CD",
+          "hidden": true
+        },
+        {
+          "type": "BREAKING CHANGE",
+          "section": "Breaking Changes",
+          "hidden": false
+        }
+      ]
     }
   }
 }
