@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0](https://github.com/viamin/ruby-maat/compare/v1.2.0...v1.3.0) (2025-09-03)
+
+
+### Features
+
+* add command preview functionality before execution ([3801f15](https://github.com/viamin/ruby-maat/commit/3801f15cf31cca8d519082ce78890efa4b5b9c65))
+* add command preview functionality before execution ([499b3d5](https://github.com/viamin/ruby-maat/commit/499b3d5c929175d2e394d2877ff0ab30e973739e))
+
+
+### Bug Fixes
+
+* move release-type out of packages section of release-please-config ([ee87f5b](https://github.com/viamin/ruby-maat/commit/ee87f5b1a2e4d48ddc36ea516a9a968b23e75f39))
+
 ## [1.2.0](https://github.com/viamin/ruby-maat/compare/ruby-maat-v1.1.3...ruby-maat/v1.2.0) (2025-08-17)
 
 
