@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.1](https://github.com/viamin/ruby-maat/compare/v1.3.0...v1.3.1) (2025-09-08)
+
+
+### Bug Fixes
+
+* **Gemfile.lock:** update ruby-maat version to 1.3.0 ([c5f8f1d](https://github.com/viamin/ruby-maat/commit/c5f8f1d659220d0db4015ac21fbb285d454a8a53))
+* **release:** update version to 1.3.0 and enhance release-please configuration ([76c5222](https://github.com/viamin/ruby-maat/commit/76c5222720ee66c5e4238720c07f9e33edf1587e))
+* **release:** update version to 1.3.0 and enhance release-please configuration ([6e96292](https://github.com/viamin/ruby-maat/commit/6e962922db3179f5b3d51c13db513ec89ea23fcb))
+
 ## [1.3.0](https://github.com/viamin/ruby-maat/compare/v1.2.0...v1.3.0) (2025-09-03)
 
 
