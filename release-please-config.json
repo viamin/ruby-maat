@@ -3,6 +3,7 @@
   "packages": {
     ".": {
       "release-type": "ruby",
+      "package-name": "ruby-maat",
       "version-file": "lib/ruby_maat/version.rb",
       "changelog-sections": [
         {
