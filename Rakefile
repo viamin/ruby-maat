@@ -14,7 +14,7 @@ Rake::Task["release"].clear
 desc "Build and push gem to RubyGems (skips tag creation - handled by release-please)"
 task :release do
   Rake::Task["build"].invoke
-  Rake::Task["rubygem:push"].invoke
+  Rake::Task["rubygems:push"].invoke
 end
 
 task default: %i[spec rubocop]
