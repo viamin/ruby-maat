@@ -5,6 +5,60 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0](https://github.com/viamin/ruby-maat/compare/ruby-maat-v1.3.4...ruby-maat/v1.4.0) (2025-09-08)
+
+
+### Features
+
+* add CodeQL security analysis script and update configuration to exclude CodeQL artifacts ([d020fea](https://github.com/viamin/ruby-maat/commit/d020fea2485b456747f3546a6c6f59a8b31b63c4))
+* add command preview functionality before execution ([3801f15](https://github.com/viamin/ruby-maat/commit/3801f15cf31cca8d519082ce78890efa4b5b9c65))
+* add command preview functionality before execution ([499b3d5](https://github.com/viamin/ruby-maat/commit/499b3d5c929175d2e394d2877ff0ab30e973739e))
+* add interactive log generation mode and enhance log generation options ([2375f04](https://github.com/viamin/ruby-maat/commit/2375f04625f2d101cb48b477728da45249e1f972))
+* add rubocop-performance gem and improve shell command security with validation and escaping ([66f9791](https://github.com/viamin/ruby-maat/commit/66f97917bd4d57da7ce89e6eebbac28dd0326175))
+
+
+### Bug Fixes
+
+* 71 by documenting the format of the mapping files used for architectural analyses ([587f9d0](https://github.com/viamin/ruby-maat/commit/587f9d06e0cad5b9cb14c06aafdfe649870c9d5a))
+* add description to release task to satisfy RuboCop ([51c8bb4](https://github.com/viamin/ruby-maat/commit/51c8bb40d3057de0a71f33db2ae6bc5eac423ee0))
+* add missing ruby version file to extra-files in release config ([d565352](https://github.com/viamin/ruby-maat/commit/d56535266542396b9a124516ae3c5de1fb3926f5))
+* add release-commit-message-scope configuration for CI ([59f1af1](https://github.com/viamin/ruby-maat/commit/59f1af1837cec33bed85f7a11bf0d56c9edb0a29))
+* add release-commit-message-scope configuration for CI ([e580a05](https://github.com/viamin/ruby-maat/commit/e580a05c489d8a393c75d199ed01191591d84574))
+* **Gemfile.lock:** update ruby-maat version to 1.3.0 ([c5f8f1d](https://github.com/viamin/ruby-maat/commit/c5f8f1d659220d0db4015ac21fbb285d454a8a53))
+* improve shell command execution and regex pattern for change detection ([0566796](https://github.com/viamin/ruby-maat/commit/05667963965cc137a3343ca492ffc1bf81791c37))
+* move release-type out of packages section of release-please-config ([ee87f5b](https://github.com/viamin/ruby-maat/commit/ee87f5b1a2e4d48ddc36ea516a9a968b23e75f39))
+* override release task to skip tag creation ([7f22222](https://github.com/viamin/ruby-maat/commit/7f22222df12e90d8507be5baa584a6cce34470fa))
+* **release:** update version to 1.3.0 and enhance release-please configuration ([76c5222](https://github.com/viamin/ruby-maat/commit/76c5222720ee66c5e4238720c07f9e33edf1587e))
+* **release:** update version to 1.3.0 and enhance release-please configuration ([6e96292](https://github.com/viamin/ruby-maat/commit/6e962922db3179f5b3d51c13db513ec89ea23fcb))
+* update CHANGE_PATTERN regex for improved line matching in Git2Parser ([3ffc27c](https://github.com/viamin/ruby-maat/commit/3ffc27c4abde42494daff8f701aa38c1dffbb1eb))
+* update permissions in CI workflows for better access control ([9c30839](https://github.com/viamin/ruby-maat/commit/9c30839ea3c8f6c7fee56d911231ebc27faa35df))
+* update permissions in CI workflows for better access control ([be49302](https://github.com/viamin/ruby-maat/commit/be49302c98a16b528ebf56137667998382ce56c4))
+* update regex patterns in parsers for improved matching ([d56ef8f](https://github.com/viamin/ruby-maat/commit/d56ef8fb93a433ffbafd74374966271bd6419ebc))
+* use correct task name rubygems:push instead of rubygem:push ([10d4795](https://github.com/viamin/ruby-maat/commit/10d4795b56346189cfd140dc1fa7c0aa7458b64d))
+* version info for automations ([6d1dc43](https://github.com/viamin/ruby-maat/commit/6d1dc43f1b3bf666ca54b7d3c5999d63a7964cab))
+
+
+### Improvements
+
+* put a new on the complex behavior for organizing commits into sliding windows ([4829229](https://github.com/viamin/ruby-maat/commit/48292293652912af17835e1f31190ff720882dc2))
+* Ruby Maat for Enhanced Log Generation and CLI Features ([de6123e](https://github.com/viamin/ruby-maat/commit/de6123ee827376d18ac8cd62a25da50debd755d7))
+* Ruby Maat for Enhanced Log Generation and CLI Features ([e5a6410](https://github.com/viamin/ruby-maat/commit/e5a64105b45e88c89ccdb074befa9ece453666ea))
+* simplify CI workflow and remove redundant release task ([b37fcd1](https://github.com/viamin/ruby-maat/commit/b37fcd11a885a9a45103b74c22894aa21c5ab824))
+* update RSpec configuration and improve integration test handling ([b6895cb](https://github.com/viamin/ruby-maat/commit/b6895cb7e6ad9e1d53f836e1f7472a719372bd86))
+* update RSpec tests to use `described_class` and improve mock handling ([033dbe3](https://github.com/viamin/ruby-maat/commit/033dbe3c483041f249f12f500fb7483447902fe0))
+
+
+### Documentation
+
+* Update README.md for on-prem pricing page ([e745abe](https://github.com/viamin/ruby-maat/commit/e745abece16b47adbb18d63fdaba39eb31c69204))
+
+
+### Dependencies
+
+* **deps:** bump rexml from 3.4.1 to 3.4.2 ([56ddba6](https://github.com/viamin/ruby-maat/commit/56ddba6daf65e38220db40a93b197fe0a7f0fed2))
+* **deps:** bump rexml from 3.4.2 to 3.4.3 ([10300aa](https://github.com/viamin/ruby-maat/commit/10300aa75eca1441fa7a9d80b285f0195ca5c078))
+* **deps:** bump rubocop-rspec from 3.6.0 to 3.7.0 ([f897a8f](https://github.com/viamin/ruby-maat/commit/f897a8fc5c16cd609e1398b4c41e95539dec8d18))
+
 ## [1.3.4](https://github.com/viamin/ruby-maat/compare/v1.3.3...v1.3.4) (2025-09-08)
 
 
