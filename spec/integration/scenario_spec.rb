@@ -7,8 +7,8 @@ require "stringio"
 # rubocop:disable RSpec/DescribeClass
 RSpec.describe "Integration scenarios" do
   # Test data files from the original code-maat test suite
-  let(:git2_log_file) { "./test/code_maat/end_to_end/simple_git2.txt" }
-  let(:empty_git_file) { "./test/code_maat/end_to_end/empty.git" }
+  let(:git2_log_file) { "./spec/fixtures/code_maat/end_to_end/simple_git2.txt" }
+  let(:empty_git_file) { "./spec/fixtures/code_maat/end_to_end/empty.git" }
 
   def run_ruby_maat(log_file, vcs, analysis, options = {})
     # Build command line arguments

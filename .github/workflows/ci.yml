@@ -101,6 +101,6 @@ jobs:
     - name: Test with sample data
       run: |
         # Test basic functionality with test data
-        bundle exec exe/ruby-maat -l test/code_maat/end_to_end/simple_git2.txt -c git2 -a authors -n 1
-        bundle exec exe/ruby-maat -l test/code_maat/end_to_end/simple_git2.txt -c git2 -a revisions -n 1
-        bundle exec exe/ruby-maat -l test/code_maat/end_to_end/simple_git2.txt -c git2 -a coupling -n 1 -m 1 -i 50
+        bundle exec exe/ruby-maat -l spec/fixtures/code_maat/end_to_end/simple_git2.txt -c git2 -a authors -n 1
+        bundle exec exe/ruby-maat -l spec/fixtures/code_maat/end_to_end/simple_git2.txt -c git2 -a revisions -n 1
+        bundle exec exe/ruby-maat -l spec/fixtures/code_maat/end_to_end/simple_git2.txt -c git2 -a coupling -n 1 -m 1 -i 50
