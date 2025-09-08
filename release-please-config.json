@@ -5,6 +5,7 @@
       "release-type": "ruby",
       "package-name": "ruby-maat",
       "version-file": "lib/ruby_maat/version.rb",
+      "bootstrap-sha": "262d89504c7e140a1372511b45996c707f97bab2",
       "changelog-sections": [
         {
           "type": "feat",
