@@ -39,7 +39,7 @@
         {
           "type": "ci",
           "section": "CI/CD",
-          "hidden": true
+          "hidden": false
         },
         {
           "type": "deps",
