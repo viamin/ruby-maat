@@ -5,6 +5,42 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.4](https://github.com/viamin/ruby-maat/compare/v1.3.3...v1.3.4) (2025-09-08)
+
+
+### Improvements
+
+* simplify CI workflow and remove redundant release task ([b37fcd1](https://github.com/viamin/ruby-maat/commit/b37fcd11a885a9a45103b74c22894aa21c5ab824))
+
+## [1.3.3](https://github.com/viamin/ruby-maat/compare/v1.3.2...v1.3.3) (2025-09-08)
+
+
+### Bug Fixes
+
+* use correct task name rubygems:push instead of rubygem:push ([10d4795](https://github.com/viamin/ruby-maat/commit/10d4795b56346189cfd140dc1fa7c0aa7458b64d))
+
+## [1.3.2](https://github.com/viamin/ruby-maat/compare/v1.3.1...v1.3.2) (2025-09-08)
+
+
+### Bug Fixes
+
+* add description to release task to satisfy RuboCop ([51c8bb4](https://github.com/viamin/ruby-maat/commit/51c8bb40d3057de0a71f33db2ae6bc5eac423ee0))
+* override release task to skip tag creation ([7f22222](https://github.com/viamin/ruby-maat/commit/7f22222df12e90d8507be5baa584a6cce34470fa))
+
+## [1.3.1](https://github.com/viamin/ruby-maat/compare/v1.3.0...v1.3.1) (2025-09-08)
+
+
+### Bug Fixes
+
+* **Gemfile.lock:** update ruby-maat version to 1.3.0 ([c5f8f1d](https://github.com/viamin/ruby-maat/commit/c5f8f1d659220d0db4015ac21fbb285d454a8a53))
+* **release:** update version to 1.3.0 and enhance release-please configuration ([76c5222](https://github.com/viamin/ruby-maat/commit/76c5222720ee66c5e4238720c07f9e33edf1587e))
+* **release:** update version to 1.3.0 and enhance release-please configuration ([6e96292](https://github.com/viamin/ruby-maat/commit/6e962922db3179f5b3d51c13db513ec89ea23fcb))
+
+
+### Dependencies
+
+* **deps:** bump rexml from 3.4.2 to 3.4.3 ([10300aa](https://github.com/viamin/ruby-maat/commit/10300aa75eca1441fa7a9d80b285f0195ca5c078))
+
 ## [1.3.0](https://github.com/viamin/ruby-maat/compare/v1.2.0...v1.3.0) (2025-09-03)
 
 

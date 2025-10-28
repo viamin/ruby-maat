@@ -42,6 +42,11 @@
           "hidden": true
         },
         {
+          "type": "deps",
+          "section": "Dependencies",
+          "hidden": false
+        },
+        {
           "type": "BREAKING CHANGE",
           "section": "Breaking Changes",
           "hidden": false
