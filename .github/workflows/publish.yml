@@ -35,6 +35,44 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           release-type: ruby
+      - name: Find release PR
+        id: find-pr
+        run: |
+          set -euo pipefail
+          REPO="${GITHUB_REPOSITORY}"
+          PR_JSON=$(gh pr list --repo "$REPO" --label "autorelease: pending" --json number --limit 1 || echo '[]')
+          if ! command -v jq >/dev/null 2>&1; then
+            echo "jq not found; cannot parse release PR JSON" >&2
+            PR_NUMBER=""
+          else
+            PR_NUMBER=$(jq -r '.[0].number // ""' <<< "$PR_JSON")
+          fi
+          if [ -n "$PR_NUMBER" ]; then
+            echo "Found release PR #$PR_NUMBER"
+          else
+            echo "No active release PR found."
+          fi
+          echo "pr-number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Assign release PR to viamin
+        if: steps.find-pr.outputs.pr-number != ''
+        uses: actions/github-script@v6
+        env:
+          PR_NUMBER: ${{ steps.find-pr.outputs.pr-number }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const prNumber = Number(process.env.PR_NUMBER);
+            await github.rest.issues.addAssignees({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              assignees: ['viamin']
+            });
+            core.info(`Assigned release PR #${prNumber} to viamin.`);
+
 
   publish:
     runs-on: ubuntu-latest
