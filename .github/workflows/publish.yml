@@ -48,7 +48,7 @@ jobs:
 
       - name: Assign release PR to viamin
         if: steps.find-pr.outputs.pr-number != ''
-        uses: actions/github-script@v6
+        uses: actions/github-script@v8
         env:
           PR_NUMBER: ${{ steps.find-pr.outputs.pr-number }}
         with:
