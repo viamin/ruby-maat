@@ -1,6 +1,6 @@
---2--2013-02-08--APT
+--2--2013-02-08--APT--Update network and presentation layers
 1	2	/Infrastrucure/Network/Connection.cs
 3	4	/Presentation/Status/ClientPresenter.cs
 
---1--2013-02-07--XYZ
+--1--2013-02-07--XYZ--Fix connection issue
 18	2	/Infrastrucure/Network/Connection.cs
