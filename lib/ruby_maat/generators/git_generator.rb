@@ -119,7 +119,7 @@ module RubyMaat
         parts << "--all" if options[:all_branches]
         parts << "--numstat"
         parts << "--date=short"
-        parts << "--pretty=format:'--%h--%ad--%aN'"
+        parts << "--pretty=format:'--%h--%ad--%aN--%s'"
         parts << "--no-renames" if options[:no_renames]
 
         # Date filtering (with validation and shell escaping)

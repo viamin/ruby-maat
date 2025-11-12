@@ -78,7 +78,7 @@ RSpec.describe RubyMaat::Generators::GitGenerator do
 
     context "with git2 format" do
       it "builds correct git2 command" do
-        expected_command = "git log --all --numstat --date=short --pretty=format:'--%h--%ad--%aN' --no-renames"
+        expected_command = "git log --all --numstat --date=short --pretty=format:'--%h--%ad--%aN--%s' --no-renames"
         allow(generator).to receive(:execute_command).with(expected_command)
 
         generator.generate_log(nil, format: "git2", all_branches: true, no_renames: true)
@@ -98,7 +98,7 @@ RSpec.describe RubyMaat::Generators::GitGenerator do
 
     context "with date filtering" do
       it "includes date filters in command" do
-        expected_command = "git log --all --numstat --date=short --pretty=format:'--%h--%ad--%aN' --no-renames --after=2023-01-01 --before=2023-12-31"
+        expected_command = "git log --all --numstat --date=short --pretty=format:'--%h--%ad--%aN--%s' --no-renames --after=2023-01-01 --before=2023-12-31"
         allow(generator).to receive(:execute_command).with(expected_command)
 
         generator.generate_log(nil,

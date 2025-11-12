@@ -5,17 +5,17 @@ module RubyMaat
   module Parsers
     # Git2 parser - preferred Git parser (more tolerant and faster)
     #
-    # Input: git log --all --numstat --date=short --pretty=format:'--%h--%ad--%aN' --no-renames --after=YYYY-MM-DD
+    # Input: git log --all --numstat --date=short --pretty=format:'--%h--%ad--%aN--%s' --no-renames --after=YYYY-MM-DD
     #
     # Sample format:
-    # --586b4eb--2015-06-15--Adam Tornhill
+    # --586b4eb--2015-06-15--Adam Tornhill--Add new feature
     # 35      0       src/code_maat/mining/vcs.clj
     # 2       1       test/file.rb
     #
-    # --abc123--2015-06-16--Jane Doe
+    # --abc123--2015-06-16--Jane Doe--Fix bug in parser
     # 10      5       lib/example.rb
     class Git2Parser < BaseParser
-      COMMIT_SEPARATOR = /^--([a-z0-9]+)--(\d{4}-\d{2}-\d{2})--([^\r\n]+)$/
+      COMMIT_SEPARATOR = /^--([a-z0-9]+)--(\d{4}-\d{2}-\d{2})--([^-\r\n]+?)--([^\r\n]*)$/
       CHANGE_PATTERN = /^(-|\d+)[\t ]{1,10}(-|\d+)[\t ]{1,10}([^\r\n]*)$/
 
       protected
@@ -32,7 +32,8 @@ module RubyMaat
             current_commit = {
               revision: commit_match[1],
               date: parse_date(commit_match[2]),
-              author: commit_match[3].strip
+              author: commit_match[3].strip,
+              message: commit_match[4].strip
             }
           elsif current_commit && (change_match = line.match(CHANGE_PATTERN))
             added = clean_numstat(change_match[1])
@@ -47,6 +48,7 @@ module RubyMaat
               author: current_commit[:author],
               date: current_commit[:date],
               revision: current_commit[:revision],
+              message: current_commit[:message],
               loc_added: added,
               loc_deleted: deleted
             )
