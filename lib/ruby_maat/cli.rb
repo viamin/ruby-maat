@@ -50,8 +50,9 @@ module RubyMaat
     private
 
     def handle_log_generation
-      # Auto-enable merge detection when using merge-coupling analysis
-      if @options[:analysis] == "merge-coupling" && @options[:version_control]&.start_with?("git")
+      # Auto-enable merge detection when using merge-coupling analysis with git2 format.
+      # Only git2 supports parent-hash detection; the legacy git format ignores this flag.
+      if @options[:analysis] == "merge-coupling" && @options[:version_control] == "git2"
         @options[:detect_merges] = true
       end
 

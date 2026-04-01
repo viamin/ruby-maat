@@ -11,21 +11,25 @@ module RubyMaat
     #   git log --all --numstat --date=short --pretty=format:'--%h--%ad--%aN--%s' --no-renames
     #
     # Enhanced format (with parent hashes for merge detection):
-    #   git log --all --numstat --date=short --pretty=format:'--%h--%ad--%aN--%p--%s' --no-renames
+    #   git log --all --numstat --date=short --pretty=format:'--%h--%ad--%aN--%p%x09%s' --no-renames
+    #   Note: %x09 emits a literal tab character, making the parents/subject boundary unambiguous
+    #   (since neither parent hashes nor the -- delimiters can contain tabs).
     #
     # Sample standard format:
     # --586b4eb--2015-06-15--Adam Tornhill--Add new feature
     # 35      0       src/code_maat/mining/vcs.clj
     #
-    # Sample enhanced format (merge commit has multiple parent hashes):
-    # --abc123--2015-06-16--Jane Doe--def456 ghi789--Merge pull request #42
+    # Sample enhanced format (merge commit has multiple parent hashes, tab before subject):
+    # --abc123--2015-06-16--Jane Doe--def456 ghi789\tMerge pull request #42
     # 10      5       lib/example.rb
     class Git2Parser < BaseParser
       include MergeDetection
 
-      # Enhanced format: hash--date--author--parents--message
-      # Parents field uses * (zero or more) to handle root commits which have no parents
-      COMMIT_WITH_PARENTS = /^--([a-z0-9]+)--(\d{4}-\d{2}-\d{2})--([^-\r\n]+?)--([a-f0-9 ]*)--([^\r\n]*)$/
+      # Enhanced format: hash--date--author--parents<TAB>message
+      # Uses a tab character between parents and subject to avoid ambiguity
+      # (standard format subjects containing '--' with hex-like prefixes could otherwise be misparsed).
+      # Parents field uses * (zero or more) to handle root commits which have no parents.
+      COMMIT_WITH_PARENTS = /^--([a-z0-9]+)--(\d{4}-\d{2}-\d{2})--([^-\r\n]+?)--([a-f0-9 ]*)\t([^\r\n]*)$/
       # Standard format: hash--date--author--message
       COMMIT_SEPARATOR = /^--([a-z0-9]+)--(\d{4}-\d{2}-\d{2})--([^-\r\n]+?)--([^\r\n]*)$/
       CHANGE_PATTERN = /^(-|\d+)[\t ]{1,10}(-|\d+)[\t ]{1,10}([^\r\n]*)$/

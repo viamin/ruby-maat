@@ -14,7 +14,10 @@ module RubyMaat
     # 1. Having multiple parent commits (detected via enhanced git log format with %p)
     # 2. Commit message patterns (e.g., "Merge pull request #42", "Merge branch 'feature'")
     #
-    # Non-merge commits that aren't children of any merge are treated as their own group.
+    # Grouping heuristic (log-order segmentation):
+    # - Each merge commit starts a new group
+    # - Non-merge commits that follow a merge are added to that merge's group
+    # - Non-merge commits that appear before any merge form standalone groups
     class MergeCoupling < BaseAnalysis
       def analyze(dataset, options = {})
         min_revs = options[:min_revs] || 1
@@ -54,11 +57,12 @@ module RubyMaat
 
       private
 
-      # Build merge groups: map each merge commit (or standalone commit) to its set of entities.
-      # Commits are grouped by scanning the dataset in order:
-      # - When a merge commit is encountered, it starts a new group
-      # - Non-merge commits following a merge are included in that merge group
-      # - Non-merge commits before any merge form their own individual groups
+      # Build merge groups using log-order segmentation.
+      # Scans revisions in dataset order and segments them into groups:
+      # - A merge commit starts a new group keyed by its revision
+      # - Subsequent non-merge commits are appended to the most recent merge group
+      # - Non-merge commits appearing before the first merge each form a standalone group
+      # This approximates PR boundaries when the log is in reverse-chronological order.
       def build_merge_groups(dataset)
         rows = dataset.to_df.to_a
 

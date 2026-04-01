@@ -58,13 +58,12 @@ RSpec.describe RubyMaat::Parsers::Git2Parser do
 
     context "with enhanced format (parent-based detection)" do
       let(:log_with_parents) do
-        <<~LOG
-          --abc123--2023-01-15--John Doe--def456 aabb99--Merge pull request #42
-          10      5       src/main.rb
-
-          --ccd012--2023-01-14--Jane Smith--eef345--Regular commit
-          15      3       src/helper.rb
-        LOG
+        # Enhanced format uses tab between parents and subject
+        "--abc123--2023-01-15--John Doe--def456 aabb99\tMerge pull request #42\n" \
+        "10      5       src/main.rb\n" \
+        "\n" \
+        "--ccd012--2023-01-14--Jane Smith--eef345\tRegular commit\n" \
+        "15      3       src/helper.rb\n"
       end
 
       let(:temp_file) do
@@ -90,16 +89,15 @@ RSpec.describe RubyMaat::Parsers::Git2Parser do
 
     context "with enhanced format root commits (no parents)" do
       let(:log_with_root_commit) do
-        <<~LOG
-          --abc123--2023-01-15--John Doe--def456 aabb99--Merge pull request #42
-          10      5       src/main.rb
-
-          --ccd012--2023-01-14--Jane Smith--eef345--Regular commit
-          15      3       src/helper.rb
-
-          --root01--2023-01-01--Jane Smith----Initial commit
-          20      0       README.md
-        LOG
+        # Enhanced format uses tab between parents and subject
+        "--abc123--2023-01-15--John Doe--def456 aabb99\tMerge pull request #42\n" \
+        "10      5       src/main.rb\n" \
+        "\n" \
+        "--ccd012--2023-01-14--Jane Smith--eef345\tRegular commit\n" \
+        "15      3       src/helper.rb\n" \
+        "\n" \
+        "--root01--2023-01-01--Jane Smith--\tInitial commit\n" \
+        "20      0       README.md\n"
       end
 
       let(:temp_file) do
@@ -131,6 +129,44 @@ RSpec.describe RubyMaat::Parsers::Git2Parser do
 
         expect(merge_record.merge_commit).to be true
         expect(regular_record.merge_commit).to be false
+      end
+    end
+
+    context "with standard format subjects containing -- and hex-like tokens" do
+      let(:log_with_tricky_subject) do
+        # Standard format: subject starts with hex-like text and contains '--'
+        # This must NOT be misparsed as enhanced format with parents
+        <<~LOG
+          --abc123--2023-01-15--John Doe--deadbeef--fix edge case
+          10      5       src/main.rb
+
+          --def456--2023-01-14--Jane Smith--cafe0123 babe4567--some description
+          15      3       src/helper.rb
+        LOG
+      end
+
+      let(:temp_file) do
+        file = Tempfile.new(["git2_tricky_log", ".log"])
+        file.write(log_with_tricky_subject)
+        file.close
+        file
+      end
+
+      after { temp_file.unlink }
+
+      it "parses as standard format without misidentifying parents" do
+        parser = described_class.new(temp_file.path)
+        records = parser.parse
+
+        record1 = records.find { |r| r.revision == "abc123" }
+        expect(record1).not_to be_nil
+        expect(record1.message).to eq("deadbeef--fix edge case")
+        expect(record1.merge_commit).to be false
+
+        record2 = records.find { |r| r.revision == "def456" }
+        expect(record2).not_to be_nil
+        expect(record2.message).to eq("cafe0123 babe4567--some description")
+        expect(record2.merge_commit).to be false
       end
     end
 

@@ -126,9 +126,11 @@ module RubyMaat
         parts << "--numstat"
         parts << "--date=short"
 
-        # Use enhanced format with parent hashes for merge commit detection
+        # Use enhanced format with parent hashes for merge commit detection.
+        # %x09 emits a tab to unambiguously separate parents from subject
+        # (avoids misparsing when the subject itself contains '--').
         pretty_format = if options[:detect_merges]
-          "--pretty=format:'--%h--%ad--%aN--%p--%s'"
+          "--pretty=format:'--%h--%ad--%aN--%p%x09%s'"
         else
           "--pretty=format:'--%h--%ad--%aN--%s'"
         end
