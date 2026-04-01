@@ -48,6 +48,14 @@ module RubyMaat
             no_renames: true,
             all_branches: true
           }
+        },
+        "pr-coupling" => {
+          description: "Format with parent hashes for PR-level coupling analysis (use with --group-by-merge)",
+          options: {
+            format: "git2-parents",
+            no_renames: true,
+            all_branches: true
+          }
         }
       }.freeze
 
@@ -72,6 +80,8 @@ module RubyMaat
         case format
         when "git2"
           build_git2_command(options)
+        when "git2-parents"
+          build_git2_parents_command(options)
         when "legacy"
           build_legacy_command(options)
         else
@@ -130,6 +140,25 @@ module RubyMaat
         parts << "--author=#{shell_escape(options[:author])}" if options[:author]
 
         # Add path at the end if specified (with shell escaping)
+        parts << "--" << shell_escape(options[:path]) if options[:path]
+
+        parts.join(" ")
+      end
+
+      def build_git2_parents_command(options)
+        parts = ["git", "log"]
+
+        parts << "--all" if options[:all_branches]
+        parts << "--numstat"
+        parts << "--date=short"
+        parts << "--pretty=format:'--%h--%p--%ad--%aN--%s'"
+        parts << "--no-renames" if options[:no_renames]
+
+        parts << "--after=#{shell_escape(validate_date(options[:since]))}" if options[:since]
+        parts << "--before=#{shell_escape(validate_date(options[:until]))}" if options[:until]
+
+        parts << "--author=#{shell_escape(options[:author])}" if options[:author]
+
         parts << "--" << shell_escape(options[:path]) if options[:path]
 
         parts.join(" ")

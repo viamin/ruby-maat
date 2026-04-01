@@ -4,9 +4,10 @@ module RubyMaat
   # Represents a single change/modification record from VCS
   # This is the fundamental data structure that flows through the entire pipeline
   class ChangeRecord
-    attr_reader :entity, :author, :date, :revision, :message, :loc_added, :loc_deleted
+    attr_reader :entity, :author, :date, :revision, :message, :loc_added, :loc_deleted, :parent_revisions
 
-    def initialize(entity:, author:, date:, revision:, message: nil, loc_added: nil, loc_deleted: nil)
+    def initialize(entity:, author:, date:, revision:, message: nil, loc_added: nil, loc_deleted: nil,
+      parent_revisions: nil)
       @entity = entity
       @author = author
       @date = date.is_a?(Date) ? date : Date.parse(date)
@@ -14,6 +15,11 @@ module RubyMaat
       @message = message
       @loc_added = loc_added.to_i if loc_added && (!loc_added.is_a?(Float) || !loc_added.nan?)
       @loc_deleted = loc_deleted.to_i if loc_deleted && (!loc_deleted.is_a?(Float) || !loc_deleted.nan?)
+      @parent_revisions = parent_revisions
+    end
+
+    def merge_commit?
+      parent_revisions.is_a?(Array) && parent_revisions.size >= 2
     end
 
     def to_h

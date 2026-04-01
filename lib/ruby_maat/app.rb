@@ -44,6 +44,7 @@ module RubyMaat
       change_records = parser.parse
 
       # Apply data transformations
+      change_records = apply_merge_grouping(change_records)
       change_records = apply_grouping(change_records)
       change_records = apply_temporal_grouping(change_records)
       change_records = apply_team_mapping(change_records)
@@ -92,6 +93,13 @@ module RubyMaat
       when "tfs"
         RubyMaat::Parsers::TfsParser.new(@options[:log], @options)
       end
+    end
+
+    def apply_merge_grouping(change_records)
+      return change_records unless @options[:group_by_merge]
+
+      grouper = RubyMaat::Groupers::MergeCommitGrouper.new
+      grouper.group(change_records)
     end
 
     def apply_grouping(change_records)

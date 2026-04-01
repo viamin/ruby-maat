@@ -108,5 +108,71 @@ RSpec.describe RubyMaat::Parsers::Git2Parser do
 
       expect { parser.parse }.to raise_error(ArgumentError, /Log file not found/)
     end
+
+    context "with parent hashes format" do
+      let(:log_with_parents) do
+        <<~LOG
+          --aaa111--bbb222 ccc333--2023-01-20--Alice--Merge PR #42
+          5       2       src/feature.rb
+          3       0       test/feature_test.rb
+
+          --bbb222--ddd444--2023-01-19--Bob--Add feature implementation
+          10      0       src/feature.rb
+
+          --ccc333--ddd444--2023-01-18--Charlie--Update docs
+          2       1       README.md
+
+          --ddd444----2023-01-17--Alice--Initial commit
+          100     0       src/main.rb
+        LOG
+      end
+
+      let(:parents_file) do
+        file = Tempfile.new(["git2_parents_log", ".log"])
+        file.write(log_with_parents)
+        file.close
+        file
+      end
+
+      after { parents_file.unlink }
+
+      it "parses commit lines with parent hashes" do
+        parser = described_class.new(parents_file.path)
+        records = parser.parse
+
+        expect(records.size).to eq(5)
+
+        # Merge commit (two parents)
+        merge_record = records[0]
+        expect(merge_record.revision).to eq("aaa111")
+        expect(merge_record.parent_revisions).to eq(%w[bbb222 ccc333])
+        expect(merge_record.merge_commit?).to be true
+
+        # Regular commit (one parent)
+        regular_record = records[2]
+        expect(regular_record.revision).to eq("bbb222")
+        expect(regular_record.parent_revisions).to eq(%w[ddd444])
+        expect(regular_record.merge_commit?).to be false
+
+        # Root commit (no parents)
+        root_record = records[4]
+        expect(root_record.revision).to eq("ddd444")
+        expect(root_record.parent_revisions).to eq([])
+        expect(root_record.merge_commit?).to be false
+      end
+
+      it "preserves standard fields when parsing parent format" do
+        parser = described_class.new(parents_file.path)
+        records = parser.parse
+
+        merge_record = records[0]
+        expect(merge_record.entity).to eq("src/feature.rb")
+        expect(merge_record.author).to eq("Alice")
+        expect(merge_record.date).to eq(Date.parse("2023-01-20"))
+        expect(merge_record.message).to eq("Merge PR #42")
+        expect(merge_record.loc_added).to eq(5)
+        expect(merge_record.loc_deleted).to eq(2)
+      end
+    end
   end
 end
