@@ -172,6 +172,45 @@ RSpec.describe RubyMaat::Analysis::MergeCoupling do
       end
     end
 
+    context "when merge flag varies across rows of the same revision" do
+      let(:records) do
+        [
+          # First row for merge1 does NOT have merge_commit set
+          RubyMaat::ChangeRecord.new(
+            entity: "file1.rb", author: "alice", date: "2023-01-01",
+            revision: "merge1", message: "Merge pull request #10",
+            merge_commit: false
+          ),
+          # Second row for merge1 DOES have merge_commit set
+          RubyMaat::ChangeRecord.new(
+            entity: "file2.rb", author: "alice", date: "2023-01-01",
+            revision: "merge1", message: "Merge pull request #10",
+            merge_commit: true
+          ),
+          # Non-merge commit that should be grouped with merge1
+          RubyMaat::ChangeRecord.new(
+            entity: "file3.rb", author: "bob", date: "2023-01-01",
+            revision: "rev1", message: "Work on feature",
+            merge_commit: false
+          )
+        ]
+      end
+
+      let(:dataset) { RubyMaat::Dataset.from_changes(records) }
+
+      it "promotes a revision to merge if any row indicates merge" do
+        results = analysis.analyze(dataset, default_options)
+
+        results_array = []
+        results.each_row { |row| results_array << row.to_h }
+
+        # file3 (from rev1) should be grouped with merge1 since merge1
+        # is promoted to a merge commit via the second row's merge_commit: true
+        coupled_entities = results_array.map { |r| [r["entity"], r["coupled"]] }.flatten.uniq
+        expect(coupled_entities).to include("file3.rb")
+      end
+    end
+
     it "filters by minimum coupling threshold" do
       records = [
         RubyMaat::ChangeRecord.new(

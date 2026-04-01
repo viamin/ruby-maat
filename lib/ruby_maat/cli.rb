@@ -50,10 +50,11 @@ module RubyMaat
     private
 
     def handle_log_generation
-      # Auto-enable merge detection when using merge-coupling analysis with git2 format.
-      # Only git2 supports parent-hash detection; the legacy git format ignores this flag.
-      if @options[:analysis] == "merge-coupling" && @options[:version_control] == "git2"
+      # Auto-enable merge detection and force git2 for merge-coupling with any git format.
+      # merge-coupling requires parent-hash detection which only git2 supports.
+      if @options[:analysis] == "merge-coupling" && @options[:version_control]&.start_with?("git")
         @options[:detect_merges] = true
+        @options[:version_control] = "git2"
       end
 
       if @options[:interactive]
@@ -106,11 +107,13 @@ module RubyMaat
       # Step 2: Choose analysis type
       analysis_type = @options[:analysis] || choose_analysis_interactive
 
-      # Auto-enable merge detection for merge-coupling with git formats.
-      # Interactive mode converts "git" to "git2" for analysis (see below),
-      # so both formats should enable merge detection here.
+      # Auto-enable merge detection and force git2 format for merge-coupling.
+      # merge-coupling requires parent-hash detection which only git2 supports,
+      # so we must override any legacy "git" selection to prevent format mismatch
+      # between the generator output and the parser.
       if analysis_type == "merge-coupling" && vcs_type.start_with?("git")
         @options[:detect_merges] = true
+        vcs_type = "git2"
       end
 
       # Step 3: Generate log and run analysis
@@ -360,6 +363,11 @@ module RubyMaat
         opts.on("--detect-merges",
           "Include parent hashes in generated log for merge commit detection (git2 format only)") do
           @options[:detect_merges] = true
+          # Auto-switch to git2 since detect-merges generates git2-format logs
+          # with parent hashes. Using legacy "git" parser would fail to parse them.
+          if @options[:version_control].nil? || @options[:version_control] == "git"
+            @options[:version_control] = "git2"
+          end
         end
 
         # Analysis-specific options

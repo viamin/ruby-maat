@@ -72,9 +72,14 @@ module RubyMaat
 
         rows.each do |row|
           rev = row["revision"]
-          unless revision_info.key?(rev)
+          merge_flag = merge_value?(row["merge_commit"])
+
+          if revision_info.key?(rev)
+            # Promote a revision to merge if any of its rows indicate a merge
+            revision_info[rev][:merge] ||= merge_flag
+          else
             revision_info[rev] = {
-              merge: merge_value?(row["merge_commit"]),
+              merge: merge_flag,
               entities: Set.new
             }
             revision_order << rev
