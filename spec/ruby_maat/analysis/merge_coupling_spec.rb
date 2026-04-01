@@ -265,6 +265,19 @@ RSpec.describe RubyMaat::Analysis::MergeCoupling do
       expect(results.keys).to include("shared-revisions")
     end
 
+    it "is rejected by App when combined with --temporal-period" do
+      options = {
+        log: "dummy.log",
+        version_control: "git2",
+        analysis: "merge-coupling",
+        temporal_period: "day"
+      }
+
+      expect do
+        RubyMaat::App.new(options).run
+      end.to raise_error(SystemExit).and output(/incompatible with --temporal-period/).to_stderr
+    end
+
     it "sorts results by coupling degree descending" do
       records = [
         RubyMaat::ChangeRecord.new(

@@ -42,5 +42,47 @@ RSpec.describe RubyMaat::Groupers::TimeGrouper do
       expect(grouped.length).to eq(1)
       expect(grouped[0].merge_commit).to be true
     end
+
+    it "uses the merge commit revision as representative when aggregating" do
+      normal_variant = RubyMaat::ChangeRecord.new(
+        entity: "src/main.rb", author: "Bob", date: "2023-01-15",
+        revision: "def456", message: "Regular commit",
+        loc_added: 3, loc_deleted: 1, merge_commit: nil
+      )
+      merge_variant = RubyMaat::ChangeRecord.new(
+        entity: "src/main.rb", author: "Alice", date: "2023-01-15",
+        revision: "abc123", message: "Merge pull request #42",
+        loc_added: 10, loc_deleted: 5, merge_commit: true
+      )
+
+      grouper = described_class.new("day")
+      # Normal record comes first, but merge revision should be selected
+      grouped = grouper.group([normal_variant, merge_variant])
+
+      expect(grouped.length).to eq(1)
+      expect(grouped[0].revision).to eq("abc123")
+      expect(grouped[0].author).to eq("Alice")
+      expect(grouped[0].merge_commit).to be true
+    end
+
+    it "uses first record as representative when no merges are present" do
+      record1 = RubyMaat::ChangeRecord.new(
+        entity: "src/main.rb", author: "Bob", date: "2023-01-15",
+        revision: "def456", message: "First commit",
+        loc_added: 3, loc_deleted: 1, merge_commit: nil
+      )
+      record2 = RubyMaat::ChangeRecord.new(
+        entity: "src/main.rb", author: "Alice", date: "2023-01-15",
+        revision: "abc123", message: "Second commit",
+        loc_added: 10, loc_deleted: 5, merge_commit: nil
+      )
+
+      grouper = described_class.new("day")
+      grouped = grouper.group([record1, record2])
+
+      expect(grouped.length).to eq(1)
+      expect(grouped[0].revision).to eq("def456")
+      expect(grouped[0].merge_commit).to be_nil
+    end
   end
 end
