@@ -53,15 +53,19 @@ module RubyMaat
       end
 
       # Walk backward from the feature branch tip, collecting commits that belong
-      # to this merge. Stop when we reach the mainline parent or a commit not in
-      # our log.
+      # to this merge. Excludes any commits reachable from the mainline parent so
+      # that intermediate merges from main into the feature branch don't pull in
+      # unrelated mainline history.
       def find_feature_commits(start, stop, commits)
+        mainline_ancestors = collect_ancestors(stop, commits)
         visited = Set.new
         queue = [start]
+        head = 0
 
-        while queue.any?
-          current = queue.shift
-          next if current == stop || visited.include?(current) || !commits.key?(current)
+        while head < queue.length
+          current = queue[head]
+          head += 1
+          next if mainline_ancestors.include?(current) || visited.include?(current) || !commits.key?(current)
 
           visited << current
 
@@ -70,6 +74,26 @@ module RubyMaat
         end
 
         visited
+      end
+
+      # Collect all ancestors reachable from a given commit (inclusive).
+      def collect_ancestors(start, commits)
+        ancestors = Set.new
+        queue = [start]
+        head = 0
+
+        while head < queue.length
+          current = queue[head]
+          head += 1
+          next if ancestors.include?(current) || !commits.key?(current)
+
+          ancestors << current
+
+          parents = commits[current][:parents]
+          parents&.each { |p| queue << p }
+        end
+
+        ancestors
       end
 
       def rewrite_records(records, merge_map)
