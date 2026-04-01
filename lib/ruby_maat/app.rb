@@ -98,6 +98,14 @@ module RubyMaat
     def apply_merge_grouping(change_records)
       return change_records unless @options[:group_by_merge]
 
+      has_parent_metadata = change_records&.any? { |record| record.parent_revisions && !record.parent_revisions.empty? }
+
+      unless has_parent_metadata
+        raise ArgumentError,
+          "--group-by-merge requires parent revision metadata in the log. " \
+          "Please regenerate the log using the 'pr-coupling' preset or another format that includes parent hashes."
+      end
+
       grouper = RubyMaat::Groupers::MergeCommitGrouper.new
       grouper.group(change_records)
     end

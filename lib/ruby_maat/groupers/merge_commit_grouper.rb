@@ -51,10 +51,13 @@ module RubyMaat
           mainline_parent = parents[0]
           next unless mainline_parent && parents.length > 1
 
-          # Handle octopus merges (3+ parents) by iterating all feature parents
+          # Compute mainline ancestors once per merge commit and reuse across
+          # all feature parents, avoiding repeated graph walks for octopus merges.
+          mainline_ancestors = collect_ancestors(mainline_parent, commits)
+
           feature_parents = parents[1..].compact
           feature_parents.each do |feature_parent|
-            feature_commits = find_feature_commits(feature_parent, mainline_parent, commits)
+            feature_commits = find_feature_commits(feature_parent, mainline_ancestors, commits)
             feature_commits.each { |rev| merge_map[rev] = merge_rev }
           end
         end
@@ -66,8 +69,11 @@ module RubyMaat
       # to this merge. Excludes any commits reachable from the mainline parent so
       # that intermediate merges from main into the feature branch don't pull in
       # unrelated mainline history.
-      def find_feature_commits(start, stop, commits)
-        mainline_ancestors = collect_ancestors(stop, commits)
+      #
+      # +mainline_ancestors+ is a pre-computed Set of commits reachable from the
+      # mainline parent, passed in to avoid redundant graph walks when a merge
+      # has multiple feature parents (octopus merges).
+      def find_feature_commits(start, mainline_ancestors, commits)
         visited = Set.new
         queue = [start]
         head = 0
