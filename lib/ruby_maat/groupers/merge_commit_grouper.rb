@@ -49,11 +49,17 @@ module RubyMaat
         merges.each do |merge_rev, info|
           parents = info[:parents] || []
           mainline_parent = parents[0]
-          next unless mainline_parent && parents.length > 1
+          # Skip this merge if it does not have a valid mainline parent present
+          # in the commit set, or if it is not a true merge (single parent).
+          next unless mainline_parent && parents.length > 1 && commits.key?(mainline_parent)
 
           # Compute mainline ancestors once per merge commit and reuse across
           # all feature parents, avoiding repeated graph walks for octopus merges.
           mainline_ancestors = collect_ancestors(mainline_parent, commits)
+          # If we cannot determine any ancestors for the mainline parent (for
+          # example due to a filtered log), skip grouping for this merge to
+          # avoid incorrect rewrites with an incomplete graph.
+          next if mainline_ancestors.empty?
 
           feature_parents = parents[1..].compact
           feature_parents.each do |feature_parent|

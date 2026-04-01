@@ -97,10 +97,11 @@ module RubyMaat
 
     def apply_merge_grouping(change_records)
       return change_records unless @options[:group_by_merge]
+      return change_records if change_records.nil? || change_records.empty?
 
       # Check for non-nil parent_revisions (not non-empty) because root commits
       # legitimately have parent_revisions == [] when parsed with the parents format.
-      has_parent_metadata = change_records&.any? { |record| !record.parent_revisions.nil? }
+      has_parent_metadata = change_records.any? { |record| !record.parent_revisions.nil? }
 
       unless has_parent_metadata
         raise ArgumentError,

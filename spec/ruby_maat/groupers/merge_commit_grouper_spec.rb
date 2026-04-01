@@ -64,6 +64,11 @@ RSpec.describe RubyMaat::Groupers::MergeCommitGrouper do
         RubyMaat::ChangeRecord.new(
           entity: "file_a.rb", author: "bob", date: "2023-01-04", revision: "feat_a1",
           parent_revisions: %w[main0]
+        ),
+        # Mainline base commit
+        RubyMaat::ChangeRecord.new(
+          entity: "file_base.rb", author: "charlie", date: "2023-01-01", revision: "main0",
+          parent_revisions: []
         )
       ]
 
@@ -118,6 +123,10 @@ RSpec.describe RubyMaat::Groupers::MergeCommitGrouper do
           entity: "file2.rb", author: "bob", date: "2023-01-04", revision: "feat1",
           loc_added: 20, loc_deleted: 3, message: "Add feature",
           parent_revisions: %w[main1]
+        ),
+        RubyMaat::ChangeRecord.new(
+          entity: "file0.rb", author: "charlie", date: "2023-01-01", revision: "main1",
+          parent_revisions: %w[main0]
         )
       ]
 
@@ -202,6 +211,25 @@ RSpec.describe RubyMaat::Groupers::MergeCommitGrouper do
 
       main_record = result.find { |r| r.entity == "file0.rb" }
       expect(main_record.revision).to eq("main1")
+    end
+
+    it "skips grouping when mainline parent is not in the commit set" do
+      records = [
+        # Merge commit whose mainline parent is not in the log (filtered/truncated log)
+        RubyMaat::ChangeRecord.new(
+          entity: "file1.rb", author: "alice", date: "2023-01-05", revision: "merge1",
+          parent_revisions: %w[missing_main feat1]
+        ),
+        RubyMaat::ChangeRecord.new(
+          entity: "file2.rb", author: "bob", date: "2023-01-04", revision: "feat1",
+          parent_revisions: %w[missing_main]
+        )
+      ]
+
+      result = grouper.group(records)
+
+      # Without a valid mainline parent, grouping should be skipped
+      expect(result.map(&:revision)).to eq(%w[merge1 feat1])
     end
 
     it "handles feature branch commits not present in the log" do
