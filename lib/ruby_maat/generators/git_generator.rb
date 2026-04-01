@@ -119,7 +119,15 @@ module RubyMaat
         parts << "--all" if options[:all_branches]
         parts << "--numstat"
         parts << "--date=short"
-        parts << "--pretty=format:'--%h--%ad--%aN--%s'"
+
+        # Use enhanced format with parent hashes for merge commit detection
+        pretty_format = if options[:detect_merges]
+          "--pretty=format:'--%h--%ad--%aN--%p--%s'"
+        else
+          "--pretty=format:'--%h--%ad--%aN--%s'"
+        end
+        parts << pretty_format
+
         parts << "--no-renames" if options[:no_renames]
 
         # Date filtering (with validation and shell escaping)

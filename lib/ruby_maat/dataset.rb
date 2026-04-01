@@ -81,7 +81,8 @@ module RubyMaat
           revision: record["revision"],
           message: record["message"],
           loc_added: record["loc_added"],
-          loc_deleted: record["loc_deleted"]
+          loc_deleted: record["loc_deleted"],
+          merge_commit: record["merge_commit"]
         )
       end
 
@@ -154,7 +155,8 @@ module RubyMaat
           revision: row[:revision],
           message: row[:message],
           loc_added: row[:loc_added],
-          loc_deleted: row[:loc_deleted]
+          loc_deleted: row[:loc_deleted],
+          merge_commit: row[:merge_commit]
         )
       end
 
@@ -186,7 +188,8 @@ module RubyMaat
         "revision" => [],
         "message" => [],
         "loc_added" => [],
-        "loc_deleted" => []
+        "loc_deleted" => [],
+        "merge_commit" => []
       }
 
       change_records.each do |record|
@@ -197,6 +200,7 @@ module RubyMaat
         data_hash["message"] << record.message
         data_hash["loc_added"] << record.loc_added
         data_hash["loc_deleted"] << record.loc_deleted
+        data_hash["merge_commit"] << record.merge_commit
       end
 
       Rover::DataFrame.new(data_hash)

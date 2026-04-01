@@ -12,6 +12,7 @@ module RubyMaat
       "authors" => RubyMaat::Analysis::Authors,
       "revisions" => RubyMaat::Analysis::Entities,
       "coupling" => RubyMaat::Analysis::LogicalCoupling,
+      "merge-coupling" => RubyMaat::Analysis::MergeCoupling,
       "soc" => RubyMaat::Analysis::SumOfCoupling,
       "summary" => RubyMaat::Analysis::Summary,
       "identity" => RubyMaat::Analysis::Identity,

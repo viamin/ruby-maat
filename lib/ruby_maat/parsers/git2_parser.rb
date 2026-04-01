@@ -5,18 +5,37 @@ module RubyMaat
   module Parsers
     # Git2 parser - preferred Git parser (more tolerant and faster)
     #
-    # Input: git log --all --numstat --date=short --pretty=format:'--%h--%ad--%aN--%s' --no-renames --after=YYYY-MM-DD
+    # Supports two formats:
     #
-    # Sample format:
+    # Standard format (without parent info):
+    #   git log --all --numstat --date=short --pretty=format:'--%h--%ad--%aN--%s' --no-renames
+    #
+    # Enhanced format (with parent hashes for merge detection):
+    #   git log --all --numstat --date=short --pretty=format:'--%h--%ad--%aN--%p--%s' --no-renames
+    #
+    # Sample standard format:
     # --586b4eb--2015-06-15--Adam Tornhill--Add new feature
     # 35      0       src/code_maat/mining/vcs.clj
-    # 2       1       test/file.rb
     #
-    # --abc123--2015-06-16--Jane Doe--Fix bug in parser
+    # Sample enhanced format (merge commit has multiple parent hashes):
+    # --abc123--2015-06-16--Jane Doe--def456 ghi789--Merge pull request #42
     # 10      5       lib/example.rb
     class Git2Parser < BaseParser
+      # Enhanced format: hash--date--author--parents--message
+      COMMIT_WITH_PARENTS = /^--([a-z0-9]+)--(\d{4}-\d{2}-\d{2})--([^-\r\n]+?)--([a-f0-9 ]+)--([^\r\n]*)$/
+      # Standard format: hash--date--author--message
       COMMIT_SEPARATOR = /^--([a-z0-9]+)--(\d{4}-\d{2}-\d{2})--([^-\r\n]+?)--([^\r\n]*)$/
       CHANGE_PATTERN = /^(-|\d+)[\t ]{1,10}(-|\d+)[\t ]{1,10}([^\r\n]*)$/
+
+      # Patterns that indicate a merge commit based on message content
+      MERGE_MESSAGE_PATTERNS = [
+        /\AMerge pull request #\d+/i,
+        /\AMerge branch '.*'/i,
+        /\AMerge branch ".*"/i,
+        /\AMerge remote-tracking branch/i,
+        /\AMerged? (?:in|into) /i,
+        /\AMerge .* into /i
+      ].freeze
 
       protected
 
@@ -28,12 +47,24 @@ module RubyMaat
           line.strip!
           next if line.empty?
 
-          if (commit_match = line.match(COMMIT_SEPARATOR))
+          if (commit_match = line.match(COMMIT_WITH_PARENTS))
+            parents = commit_match[4].strip.split
+            message = commit_match[5].strip
             current_commit = {
               revision: commit_match[1],
               date: parse_date(commit_match[2]),
               author: commit_match[3].strip,
-              message: commit_match[4].strip
+              message: message,
+              merge_commit: parents.size > 1 || merge_message?(message)
+            }
+          elsif (commit_match = line.match(COMMIT_SEPARATOR))
+            message = commit_match[4].strip
+            current_commit = {
+              revision: commit_match[1],
+              date: parse_date(commit_match[2]),
+              author: commit_match[3].strip,
+              message: message,
+              merge_commit: merge_message?(message)
             }
           elsif current_commit && (change_match = line.match(CHANGE_PATTERN))
             added = clean_numstat(change_match[1])
@@ -50,7 +81,8 @@ module RubyMaat
               revision: current_commit[:revision],
               message: current_commit[:message],
               loc_added: added,
-              loc_deleted: deleted
+              loc_deleted: deleted,
+              merge_commit: current_commit[:merge_commit]
             )
           end
         end
@@ -59,6 +91,10 @@ module RubyMaat
       end
 
       private
+
+      def merge_message?(message)
+        MERGE_MESSAGE_PATTERNS.any? { |pattern| message.match?(pattern) }
+      end
 
       def parse_date(date_str)
         Date.parse(date_str)
