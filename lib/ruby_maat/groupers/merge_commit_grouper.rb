@@ -1,5 +1,8 @@
 # frozen_string_literal: true
 
+# Set is a built-in class since Ruby 3.2 (the project's minimum version),
+# so an explicit require is not needed and would trigger Lint/RedundantRequireStatement.
+
 module RubyMaat
   module Groupers
     # Groups commits by their merge commit to enable PR-level coupling analysis.
@@ -41,12 +44,16 @@ module RubyMaat
         merges = commits.select { |_, info| info[:merge] }
 
         merges.each do |merge_rev, info|
-          feature_parent = info[:parents][1]
-          mainline_parent = info[:parents][0]
-          next unless feature_parent && mainline_parent
+          parents = info[:parents] || []
+          mainline_parent = parents[0]
+          next unless mainline_parent && parents.length > 1
 
-          feature_commits = find_feature_commits(feature_parent, mainline_parent, commits)
-          feature_commits.each { |rev| merge_map[rev] = merge_rev }
+          # Handle octopus merges (3+ parents) by iterating all feature parents
+          feature_parents = parents[1..].compact
+          feature_parents.each do |feature_parent|
+            feature_commits = find_feature_commits(feature_parent, mainline_parent, commits)
+            feature_commits.each { |rev| merge_map[rev] = merge_rev }
+          end
         end
 
         merge_map
@@ -107,7 +114,8 @@ module RubyMaat
               revision: merge_rev,
               message: record.message,
               loc_added: record.loc_added,
-              loc_deleted: record.loc_deleted
+              loc_deleted: record.loc_deleted,
+              parent_revisions: record.parent_revisions
             )
           else
             record

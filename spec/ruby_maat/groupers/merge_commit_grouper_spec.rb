@@ -131,6 +131,39 @@ RSpec.describe RubyMaat::Groupers::MergeCommitGrouper do
       expect(rewritten.loc_added).to eq(20)
       expect(rewritten.loc_deleted).to eq(3)
       expect(rewritten.message).to eq("Add feature")
+      expect(rewritten.parent_revisions).to eq(%w[main1])
+    end
+
+    it "handles octopus merges with multiple feature parents" do
+      records = [
+        RubyMaat::ChangeRecord.new(
+          entity: "file1.rb", author: "alice", date: "2023-01-10", revision: "octopus1",
+          parent_revisions: %w[main1 feat_a1 feat_b1]
+        ),
+        RubyMaat::ChangeRecord.new(
+          entity: "file_a.rb", author: "bob", date: "2023-01-08", revision: "feat_a1",
+          parent_revisions: %w[main1]
+        ),
+        RubyMaat::ChangeRecord.new(
+          entity: "file_b.rb", author: "charlie", date: "2023-01-09", revision: "feat_b1",
+          parent_revisions: %w[main1]
+        ),
+        RubyMaat::ChangeRecord.new(
+          entity: "file0.rb", author: "dave", date: "2023-01-01", revision: "main1",
+          parent_revisions: %w[main0]
+        )
+      ]
+
+      result = grouper.group(records)
+
+      feat_a = result.find { |r| r.entity == "file_a.rb" }
+      expect(feat_a.revision).to eq("octopus1")
+
+      feat_b = result.find { |r| r.entity == "file_b.rb" }
+      expect(feat_b.revision).to eq("octopus1")
+
+      main_record = result.find { |r| r.entity == "file0.rb" }
+      expect(main_record.revision).to eq("main1")
     end
 
     it "handles feature branch commits not present in the log" do
