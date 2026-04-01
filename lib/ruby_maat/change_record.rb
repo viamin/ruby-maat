@@ -15,7 +15,7 @@ module RubyMaat
       @message = message
       @loc_added = loc_added.to_i if loc_added && (!loc_added.is_a?(Float) || !loc_added.nan?)
       @loc_deleted = loc_deleted.to_i if loc_deleted && (!loc_deleted.is_a?(Float) || !loc_deleted.nan?)
-      @merge_commit = merge_commit
+      @merge_commit = normalize_merge_commit(merge_commit)
     end
 
     def to_h
@@ -45,6 +45,17 @@ module RubyMaat
 
     def eql?(other)
       self == other
+    end
+
+    private
+
+    # Normalize merge_commit to boolean or nil so that values round-tripped
+    # through Rover DataFrames (which may represent booleans as 1/0) are
+    # consistently truthy/falsy in Ruby (where 0 is truthy).
+    def normalize_merge_commit(value)
+      return nil if value.nil?
+
+      value == true || value == 1
     end
   end
 end
