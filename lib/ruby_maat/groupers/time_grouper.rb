@@ -55,6 +55,9 @@ module RubyMaat
         # Use first author (could be improved to handle multiple authors)
         author = first_record.author
 
+        # A time-grouped record is a merge if any constituent record is a merge
+        has_merge = records.any? { |r| r.merge_commit }
+
         ChangeRecord.new(
           entity: entity,
           author: author,
@@ -62,7 +65,8 @@ module RubyMaat
           revision: revision,
           message: combined_message,
           loc_added: total_added,
-          loc_deleted: total_deleted
+          loc_deleted: total_deleted,
+          merge_commit: has_merge ? true : nil
         )
       end
     end

@@ -21,7 +21,8 @@ module RubyMaat
             revision: record.revision,
             message: record.message,
             loc_added: record.loc_added,
-            loc_deleted: record.loc_deleted
+            loc_deleted: record.loc_deleted,
+            merge_commit: record.merge_commit
           )
         end
       end

@@ -106,6 +106,13 @@ module RubyMaat
       # Step 2: Choose analysis type
       analysis_type = @options[:analysis] || choose_analysis_interactive
 
+      # Auto-enable merge detection for merge-coupling with git formats.
+      # Interactive mode converts "git" to "git2" for analysis (see below),
+      # so both formats should enable merge detection here.
+      if analysis_type == "merge-coupling" && vcs_type.start_with?("git")
+        @options[:detect_merges] = true
+      end
+
       # Step 3: Generate log and run analysis
       generator = create_log_generator_for_vcs(vcs_type)
       log_output = generator.interactive_generate_for_analysis(analysis_type, @options)
