@@ -46,6 +46,22 @@ module RubyMaat
         }
       },
 
+      "merge-coupling" => {
+        name: "Merge-Based Coupling Analysis",
+        description: "Coupling at PR/merge level (less noise than commit-level)",
+        time_sensitive: true,
+        presets: {
+          "recent-merge-coupling" => {
+            description: "Recent PR-level coupling (3 months)",
+            since: -> { (Date.today - 90).strftime("%Y-%m-%d") }
+          },
+          "merge-coupling-trends" => {
+            description: "PR-level coupling evolution (1 year)",
+            since: -> { (Date.today - 365).strftime("%Y-%m-%d") }
+          }
+        }
+      },
+
       "age" => {
         name: "Code Age Analysis",
         description: "Shows how recently each module was modified",

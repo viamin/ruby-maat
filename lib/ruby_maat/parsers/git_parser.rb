@@ -14,17 +14,10 @@ module RubyMaat
     # [abc123] Jane Doe 2015-06-16 Fix bug in parser
     # 10      5       lib/example.rb
     class GitParser < BaseParser
+      include MergeDetection
+
       COMMIT_PATTERN = /^\[([a-f0-9]+)\] ([^0-9][^\t]*?) (\d{4}-\d{2}-\d{2}) ([^\r\n]*)$/
       CHANGE_PATTERN = /^(\d+|-)\t(\d+|-)\t([^\r\n]+)$/
-
-      MERGE_MESSAGE_PATTERNS = [
-        /\AMerge pull request #\d+/i,
-        /\AMerge branch '.*'/i,
-        /\AMerge branch ".*"/i,
-        /\AMerge remote-tracking branch/i,
-        /\AMerged? (?:in|into) /i,
-        /\AMerge .* into /i
-      ].freeze
 
       protected
 
@@ -71,12 +64,6 @@ module RubyMaat
         end
 
         entries
-      end
-
-      private
-
-      def merge_message?(message)
-        MERGE_MESSAGE_PATTERNS.any? { |pattern| message.match?(pattern) }
       end
     end
   end

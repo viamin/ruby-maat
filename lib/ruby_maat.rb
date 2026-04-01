@@ -6,6 +6,7 @@ require_relative "ruby_maat/dataset"
 
 # Core parsers
 require_relative "ruby_maat/parsers/base_parser"
+require_relative "ruby_maat/parsers/merge_detection"
 require_relative "ruby_maat/parsers/git_parser"
 require_relative "ruby_maat/parsers/git2_parser"
 require_relative "ruby_maat/parsers/svn_parser"

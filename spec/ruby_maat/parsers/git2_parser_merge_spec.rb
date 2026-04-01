@@ -88,6 +88,52 @@ RSpec.describe RubyMaat::Parsers::Git2Parser do
       end
     end
 
+    context "with enhanced format root commits (no parents)" do
+      let(:log_with_root_commit) do
+        <<~LOG
+          --abc123--2023-01-15--John Doe--def456 aabb99--Merge pull request #42
+          10      5       src/main.rb
+
+          --ccd012--2023-01-14--Jane Smith--eef345--Regular commit
+          15      3       src/helper.rb
+
+          --root01--2023-01-01--Jane Smith----Initial commit
+          20      0       README.md
+        LOG
+      end
+
+      let(:temp_file) do
+        file = Tempfile.new(["git2_root_log", ".log"])
+        file.write(log_with_root_commit)
+        file.close
+        file
+      end
+
+      after { temp_file.unlink }
+
+      it "parses root commits with empty parents as non-merge" do
+        parser = described_class.new(temp_file.path)
+        records = parser.parse
+
+        root_record = records.find { |r| r.revision == "root01" }
+        expect(root_record).not_to be_nil
+        expect(root_record.merge_commit).to be false
+        expect(root_record.message).to eq("Initial commit")
+        expect(root_record.entity).to eq("README.md")
+      end
+
+      it "still detects merge commits correctly alongside root commits" do
+        parser = described_class.new(temp_file.path)
+        records = parser.parse
+
+        merge_record = records.find { |r| r.revision == "abc123" }
+        regular_record = records.find { |r| r.revision == "ccd012" }
+
+        expect(merge_record.merge_commit).to be true
+        expect(regular_record.merge_commit).to be false
+      end
+    end
+
     context "with various merge message patterns" do
       def parse_single_commit(message)
         log = "--abc123--2023-01-15--John Doe--#{message}\n10\t5\tsrc/main.rb\n"

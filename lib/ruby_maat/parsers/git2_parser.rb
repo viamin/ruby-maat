@@ -21,21 +21,14 @@ module RubyMaat
     # --abc123--2015-06-16--Jane Doe--def456 ghi789--Merge pull request #42
     # 10      5       lib/example.rb
     class Git2Parser < BaseParser
+      include MergeDetection
+
       # Enhanced format: hash--date--author--parents--message
-      COMMIT_WITH_PARENTS = /^--([a-z0-9]+)--(\d{4}-\d{2}-\d{2})--([^-\r\n]+?)--([a-f0-9 ]+)--([^\r\n]*)$/
+      # Parents field uses * (zero or more) to handle root commits which have no parents
+      COMMIT_WITH_PARENTS = /^--([a-z0-9]+)--(\d{4}-\d{2}-\d{2})--([^-\r\n]+?)--([a-f0-9 ]*)--([^\r\n]*)$/
       # Standard format: hash--date--author--message
       COMMIT_SEPARATOR = /^--([a-z0-9]+)--(\d{4}-\d{2}-\d{2})--([^-\r\n]+?)--([^\r\n]*)$/
       CHANGE_PATTERN = /^(-|\d+)[\t ]{1,10}(-|\d+)[\t ]{1,10}([^\r\n]*)$/
-
-      # Patterns that indicate a merge commit based on message content
-      MERGE_MESSAGE_PATTERNS = [
-        /\AMerge pull request #\d+/i,
-        /\AMerge branch '.*'/i,
-        /\AMerge branch ".*"/i,
-        /\AMerge remote-tracking branch/i,
-        /\AMerged? (?:in|into) /i,
-        /\AMerge .* into /i
-      ].freeze
 
       protected
 
@@ -91,10 +84,6 @@ module RubyMaat
       end
 
       private
-
-      def merge_message?(message)
-        MERGE_MESSAGE_PATTERNS.any? { |pattern| message.match?(pattern) }
-      end
 
       def parse_date(date_str)
         Date.parse(date_str)

@@ -50,6 +50,11 @@ module RubyMaat
     private
 
     def handle_log_generation
+      # Auto-enable merge detection when using merge-coupling analysis
+      if @options[:analysis] == "merge-coupling" && @options[:version_control]&.start_with?("git")
+        @options[:detect_merges] = true
+      end
+
       if @options[:interactive]
         handle_interactive_mode
       else
@@ -342,6 +347,11 @@ module RubyMaat
 
         opts.on("--preset PRESET", "Use a preset configuration for log generation") do |preset|
           @options[:preset] = preset
+        end
+
+        opts.on("--detect-merges",
+          "Include parent hashes in generated log for merge commit detection (git2 format only)") do
+          @options[:detect_merges] = true
         end
 
         # Analysis-specific options
