@@ -1,8 +1,9 @@
 # frozen_string_literal: true
 
-# NOTE: Set has been a built-in class since Ruby 3.2, which is this project's
-# minimum version (required_ruby_version >= 3.2.0).  Adding `require "set"`
-# here is unnecessary and triggers RuboCop's Lint/RedundantRequireStatement.
+# NOTE: Set has been a built-in class (autoloaded without require) since
+# Ruby 3.2, which is this project's minimum version (see gemspec:
+# required_ruby_version >= "3.2.0").  An explicit `require "set"` is
+# unnecessary and triggers RuboCop's Lint/RedundantRequireStatement cop.
 
 module RubyMaat
   module Groupers
@@ -25,7 +26,8 @@ module RubyMaat
 
         return change_records if merge_map.empty?
 
-        rewrite_records(change_records, merge_map)
+        merge_dates = build_merge_dates(commit_info)
+        rewrite_records(change_records, merge_map, merge_dates)
       end
 
       private
@@ -34,7 +36,7 @@ module RubyMaat
         commits = {}
         records.each do |record|
           rev = record.revision
-          commits[rev] ||= {parents: record.parent_revisions || [], merge: false}
+          commits[rev] ||= {parents: record.parent_revisions || [], merge: false, date: record.date}
           commits[rev][:merge] = true if record.merge_commit?
         end
         commits
@@ -104,14 +106,24 @@ module RubyMaat
         ancestors
       end
 
-      def rewrite_records(records, merge_map)
+      # Build a lookup from merge revision to its date, used to align
+      # rewritten feature-branch records with the merge commit's date.
+      def build_merge_dates(commits)
+        dates = {}
+        commits.each do |rev, info|
+          dates[rev] = info[:date] if info[:merge]
+        end
+        dates
+      end
+
+      def rewrite_records(records, merge_map, merge_dates)
         records.map do |record|
           merge_rev = merge_map[record.revision]
           if merge_rev
             ChangeRecord.new(
               entity: record.entity,
               author: record.author,
-              date: record.date,
+              date: merge_dates[merge_rev] || record.date,
               revision: merge_rev,
               message: record.message,
               loc_added: record.loc_added,

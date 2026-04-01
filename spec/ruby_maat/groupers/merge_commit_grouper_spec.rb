@@ -127,11 +127,49 @@ RSpec.describe RubyMaat::Groupers::MergeCommitGrouper do
       expect(rewritten.revision).to eq("merge1")
       expect(rewritten.entity).to eq("file2.rb")
       expect(rewritten.author).to eq("bob")
-      expect(rewritten.date).to eq(Date.parse("2023-01-04"))
+      expect(rewritten.date).to eq(Date.parse("2023-01-05"))
       expect(rewritten.loc_added).to eq(20)
       expect(rewritten.loc_deleted).to eq(3)
       expect(rewritten.message).to eq("Add feature")
       expect(rewritten.parent_revisions).to eq(%w[main1])
+    end
+
+    it "rewrites feature-branch dates to the merge commit date" do
+      records = [
+        RubyMaat::ChangeRecord.new(
+          entity: "file1.rb", author: "alice", date: "2023-01-10", revision: "merge1",
+          parent_revisions: %w[main1 feat2]
+        ),
+        RubyMaat::ChangeRecord.new(
+          entity: "file2.rb", author: "bob", date: "2023-01-08", revision: "feat2",
+          parent_revisions: %w[feat1]
+        ),
+        RubyMaat::ChangeRecord.new(
+          entity: "file3.rb", author: "bob", date: "2023-01-06", revision: "feat1",
+          parent_revisions: %w[main1]
+        ),
+        RubyMaat::ChangeRecord.new(
+          entity: "file0.rb", author: "charlie", date: "2023-01-01", revision: "main1",
+          parent_revisions: %w[main0]
+        )
+      ]
+
+      result = grouper.group(records)
+
+      # Feature-branch records should have the merge commit's date
+      feat2_record = result.find { |r| r.entity == "file2.rb" }
+      expect(feat2_record.date).to eq(Date.parse("2023-01-10"))
+
+      feat1_record = result.find { |r| r.entity == "file3.rb" }
+      expect(feat1_record.date).to eq(Date.parse("2023-01-10"))
+
+      # Merge commit itself keeps its own date
+      merge_record = result.find { |r| r.entity == "file1.rb" }
+      expect(merge_record.date).to eq(Date.parse("2023-01-10"))
+
+      # Unrelated mainline commit keeps its original date
+      main_record = result.find { |r| r.entity == "file0.rb" }
+      expect(main_record.date).to eq(Date.parse("2023-01-01"))
     end
 
     it "handles octopus merges with multiple feature parents" do
