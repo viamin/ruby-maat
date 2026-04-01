@@ -1,7 +1,8 @@
 # frozen_string_literal: true
 
-# Set is a built-in class since Ruby 3.2 (the project's minimum version),
-# so an explicit require is not needed and would trigger Lint/RedundantRequireStatement.
+# NOTE: Set has been a built-in class since Ruby 3.2, which is this project's
+# minimum version (required_ruby_version >= 3.2.0).  Adding `require "set"`
+# here is unnecessary and triggers RuboCop's Lint/RedundantRequireStatement.
 
 module RubyMaat
   module Groupers
