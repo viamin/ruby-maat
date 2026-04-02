@@ -101,11 +101,17 @@ module RubyMaat
 
       # Check for non-nil parent_revisions (not non-empty) because root commits
       # legitimately have parent_revisions == [] when parsed with the parents format.
-      has_parent_metadata = change_records.any? { |record| !record.parent_revisions.nil? }
+      records_with_parents = change_records.count { |record| !record.parent_revisions.nil? }
+      records_without_parents = change_records.count { |record| record.parent_revisions.nil? }
 
-      unless has_parent_metadata
+      if records_with_parents.zero?
         raise ArgumentError,
           "--group-by-merge requires parent revision metadata in the log. " \
+          "Please regenerate the log using the 'pr-coupling' preset or another format that includes parent hashes."
+      elsif records_without_parents.positive?
+        raise ArgumentError,
+          "--group-by-merge requires parent revision metadata for all commits, " \
+          "but the provided log mixes records with and without parent hashes. " \
           "Please regenerate the log using the 'pr-coupling' preset or another format that includes parent hashes."
       end
 
