@@ -97,10 +97,12 @@ module RubyMaat
         # Format selection
         puts "Output formats:"
         puts "  1. git2 (recommended, faster parsing)"
-        puts "  2. legacy (backward compatibility)"
+        puts "  2. git2-parents (git2 with parent hashes, for --group-by-merge)"
+        puts "  3. legacy (backward compatibility)"
 
-        format_choice = ask_integer("Choose format", 1, 2)
-        options[:format] = (format_choice == 1) ? "git2" : "legacy"
+        format_choice = ask_integer("Choose format", 1, 3)
+        formats = {1 => "git2", 2 => "git2-parents", 3 => "legacy"}
+        options[:format] = formats[format_choice]
 
         # Branch selection
         options[:all_branches] = ask_yes_no("Include all branches?", options[:all_branches])

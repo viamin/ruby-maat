@@ -45,40 +45,41 @@ RSpec.describe RubyMaat::Groupers::MergeCommitGrouper do
       expect(main_record.revision).to eq("main1")
     end
 
-    it "handles multiple merge commits" do
-      records = [
-        # Second merge
-        RubyMaat::ChangeRecord.new(
-          entity: "file_b.rb", author: "alice", date: "2023-01-10", revision: "merge2",
-          parent_revisions: %w[merge1 feat_b1]
-        ),
-        RubyMaat::ChangeRecord.new(
-          entity: "file_b.rb", author: "bob", date: "2023-01-09", revision: "feat_b1",
-          parent_revisions: %w[merge1]
-        ),
-        # First merge
-        RubyMaat::ChangeRecord.new(
-          entity: "file_a.rb", author: "alice", date: "2023-01-05", revision: "merge1",
-          parent_revisions: %w[main0 feat_a1]
-        ),
-        RubyMaat::ChangeRecord.new(
-          entity: "file_a.rb", author: "bob", date: "2023-01-04", revision: "feat_a1",
-          parent_revisions: %w[main0]
-        ),
-        # Mainline base commit
-        RubyMaat::ChangeRecord.new(
-          entity: "file_base.rb", author: "charlie", date: "2023-01-01", revision: "main0",
-          parent_revisions: []
-        )
-      ]
+    context "with multiple merge commits" do
+      let(:multi_merge_records) do
+        [
+          RubyMaat::ChangeRecord.new(
+            entity: "file_b.rb", author: "alice", date: "2023-01-10", revision: "merge2",
+            parent_revisions: %w[merge1 feat_b1]
+          ),
+          RubyMaat::ChangeRecord.new(
+            entity: "file_b.rb", author: "bob", date: "2023-01-09", revision: "feat_b1",
+            parent_revisions: %w[merge1]
+          ),
+          RubyMaat::ChangeRecord.new(
+            entity: "file_a.rb", author: "alice", date: "2023-01-05", revision: "merge1",
+            parent_revisions: %w[main0 feat_a1]
+          ),
+          RubyMaat::ChangeRecord.new(
+            entity: "file_a.rb", author: "bob", date: "2023-01-04", revision: "feat_a1",
+            parent_revisions: %w[main0]
+          ),
+          RubyMaat::ChangeRecord.new(
+            entity: "file_base.rb", author: "charlie", date: "2023-01-01", revision: "main0",
+            parent_revisions: []
+          )
+        ]
+      end
 
-      result = grouper.group(records)
+      it "groups each feature branch under its respective merge" do
+        result = grouper.group(multi_merge_records)
 
-      feat_a = result.find { |r| r.author == "bob" && r.entity == "file_a.rb" }
-      expect(feat_a.revision).to eq("merge1")
+        feat_a = result.find { |r| r.author == "bob" && r.entity == "file_a.rb" }
+        expect(feat_a.revision).to eq("merge1")
 
-      feat_b = result.find { |r| r.author == "bob" && r.entity == "file_b.rb" }
-      expect(feat_b.revision).to eq("merge2")
+        feat_b = result.find { |r| r.author == "bob" && r.entity == "file_b.rb" }
+        expect(feat_b.revision).to eq("merge2")
+      end
     end
 
     it "returns records unchanged when no parent info is available" do
@@ -113,104 +114,113 @@ RSpec.describe RubyMaat::Groupers::MergeCommitGrouper do
       expect(result.map(&:revision)).to eq(%w[rev1 rev2])
     end
 
-    it "preserves record attributes when rewriting revision" do
-      records = [
-        RubyMaat::ChangeRecord.new(
-          entity: "file1.rb", author: "alice", date: "2023-01-05", revision: "merge1",
-          loc_added: 10, loc_deleted: 5, parent_revisions: %w[main1 feat1]
-        ),
-        RubyMaat::ChangeRecord.new(
-          entity: "file2.rb", author: "bob", date: "2023-01-04", revision: "feat1",
-          loc_added: 20, loc_deleted: 3, message: "Add feature",
-          parent_revisions: %w[main1]
-        ),
-        RubyMaat::ChangeRecord.new(
-          entity: "file0.rb", author: "charlie", date: "2023-01-01", revision: "main1",
-          parent_revisions: %w[main0]
-        )
-      ]
+    context "when preserving record attributes" do
+      let(:attribute_records) do
+        [
+          RubyMaat::ChangeRecord.new(
+            entity: "file1.rb", author: "alice", date: "2023-01-05", revision: "merge1",
+            loc_added: 10, loc_deleted: 5, parent_revisions: %w[main1 feat1]
+          ),
+          RubyMaat::ChangeRecord.new(
+            entity: "file2.rb", author: "bob", date: "2023-01-04", revision: "feat1",
+            loc_added: 20, loc_deleted: 3, message: "Add feature",
+            parent_revisions: %w[main1]
+          ),
+          RubyMaat::ChangeRecord.new(
+            entity: "file0.rb", author: "charlie", date: "2023-01-01", revision: "main1",
+            parent_revisions: %w[main0]
+          )
+        ]
+      end
 
-      result = grouper.group(records)
-      rewritten = result.find { |r| r.author == "bob" }
+      it "preserves record attributes when rewriting revision" do
+        result = grouper.group(attribute_records)
+        rewritten = result.find { |r| r.author == "bob" }
 
-      expect(rewritten.revision).to eq("merge1")
-      expect(rewritten.entity).to eq("file2.rb")
-      expect(rewritten.author).to eq("bob")
-      expect(rewritten.date).to eq(Date.parse("2023-01-05"))
-      expect(rewritten.loc_added).to eq(20)
-      expect(rewritten.loc_deleted).to eq(3)
-      expect(rewritten.message).to eq("Add feature")
-      expect(rewritten.parent_revisions).to eq(%w[main1])
+        expect(rewritten.revision).to eq("merge1")
+        expect(rewritten.entity).to eq("file2.rb")
+        expect(rewritten.author).to eq("bob")
+        expect(rewritten.date).to eq(Date.parse("2023-01-05"))
+        expect(rewritten.loc_added).to eq(20)
+        expect(rewritten.loc_deleted).to eq(3)
+        expect(rewritten.message).to eq("Add feature")
+        expect(rewritten.parent_revisions).to eq(%w[main1])
+      end
     end
 
-    it "rewrites feature-branch dates to the merge commit date" do
-      records = [
-        RubyMaat::ChangeRecord.new(
-          entity: "file1.rb", author: "alice", date: "2023-01-10", revision: "merge1",
-          parent_revisions: %w[main1 feat2]
-        ),
-        RubyMaat::ChangeRecord.new(
-          entity: "file2.rb", author: "bob", date: "2023-01-08", revision: "feat2",
-          parent_revisions: %w[feat1]
-        ),
-        RubyMaat::ChangeRecord.new(
-          entity: "file3.rb", author: "bob", date: "2023-01-06", revision: "feat1",
-          parent_revisions: %w[main1]
-        ),
-        RubyMaat::ChangeRecord.new(
-          entity: "file0.rb", author: "charlie", date: "2023-01-01", revision: "main1",
-          parent_revisions: %w[main0]
-        )
-      ]
+    context "when rewriting dates" do
+      let(:date_rewrite_records) do
+        [
+          RubyMaat::ChangeRecord.new(
+            entity: "file1.rb", author: "alice", date: "2023-01-10", revision: "merge1",
+            parent_revisions: %w[main1 feat2]
+          ),
+          RubyMaat::ChangeRecord.new(
+            entity: "file2.rb", author: "bob", date: "2023-01-08", revision: "feat2",
+            parent_revisions: %w[feat1]
+          ),
+          RubyMaat::ChangeRecord.new(
+            entity: "file3.rb", author: "bob", date: "2023-01-06", revision: "feat1",
+            parent_revisions: %w[main1]
+          ),
+          RubyMaat::ChangeRecord.new(
+            entity: "file0.rb", author: "charlie", date: "2023-01-01", revision: "main1",
+            parent_revisions: %w[main0]
+          )
+        ]
+      end
 
-      result = grouper.group(records)
+      it "rewrites feature-branch dates to the merge commit date" do
+        result = grouper.group(date_rewrite_records)
 
-      # Feature-branch records should have the merge commit's date
-      feat2_record = result.find { |r| r.entity == "file2.rb" }
-      expect(feat2_record.date).to eq(Date.parse("2023-01-10"))
+        feat2_record = result.find { |r| r.entity == "file2.rb" }
+        expect(feat2_record.date).to eq(Date.parse("2023-01-10"))
 
-      feat1_record = result.find { |r| r.entity == "file3.rb" }
-      expect(feat1_record.date).to eq(Date.parse("2023-01-10"))
+        feat1_record = result.find { |r| r.entity == "file3.rb" }
+        expect(feat1_record.date).to eq(Date.parse("2023-01-10"))
 
-      # Merge commit itself keeps its own date
-      merge_record = result.find { |r| r.entity == "file1.rb" }
-      expect(merge_record.date).to eq(Date.parse("2023-01-10"))
+        merge_record = result.find { |r| r.entity == "file1.rb" }
+        expect(merge_record.date).to eq(Date.parse("2023-01-10"))
 
-      # Unrelated mainline commit keeps its original date
-      main_record = result.find { |r| r.entity == "file0.rb" }
-      expect(main_record.date).to eq(Date.parse("2023-01-01"))
+        main_record = result.find { |r| r.entity == "file0.rb" }
+        expect(main_record.date).to eq(Date.parse("2023-01-01"))
+      end
     end
 
-    it "handles octopus merges with multiple feature parents" do
-      records = [
-        RubyMaat::ChangeRecord.new(
-          entity: "file1.rb", author: "alice", date: "2023-01-10", revision: "octopus1",
-          parent_revisions: %w[main1 feat_a1 feat_b1]
-        ),
-        RubyMaat::ChangeRecord.new(
-          entity: "file_a.rb", author: "bob", date: "2023-01-08", revision: "feat_a1",
-          parent_revisions: %w[main1]
-        ),
-        RubyMaat::ChangeRecord.new(
-          entity: "file_b.rb", author: "charlie", date: "2023-01-09", revision: "feat_b1",
-          parent_revisions: %w[main1]
-        ),
-        RubyMaat::ChangeRecord.new(
-          entity: "file0.rb", author: "dave", date: "2023-01-01", revision: "main1",
-          parent_revisions: %w[main0]
-        )
-      ]
+    context "with octopus merges" do
+      let(:octopus_records) do
+        [
+          RubyMaat::ChangeRecord.new(
+            entity: "file1.rb", author: "alice", date: "2023-01-10", revision: "octopus1",
+            parent_revisions: %w[main1 feat_a1 feat_b1]
+          ),
+          RubyMaat::ChangeRecord.new(
+            entity: "file_a.rb", author: "bob", date: "2023-01-08", revision: "feat_a1",
+            parent_revisions: %w[main1]
+          ),
+          RubyMaat::ChangeRecord.new(
+            entity: "file_b.rb", author: "charlie", date: "2023-01-09", revision: "feat_b1",
+            parent_revisions: %w[main1]
+          ),
+          RubyMaat::ChangeRecord.new(
+            entity: "file0.rb", author: "dave", date: "2023-01-01", revision: "main1",
+            parent_revisions: %w[main0]
+          )
+        ]
+      end
 
-      result = grouper.group(records)
+      it "handles octopus merges with multiple feature parents" do
+        result = grouper.group(octopus_records)
 
-      feat_a = result.find { |r| r.entity == "file_a.rb" }
-      expect(feat_a.revision).to eq("octopus1")
+        feat_a = result.find { |r| r.entity == "file_a.rb" }
+        expect(feat_a.revision).to eq("octopus1")
 
-      feat_b = result.find { |r| r.entity == "file_b.rb" }
-      expect(feat_b.revision).to eq("octopus1")
+        feat_b = result.find { |r| r.entity == "file_b.rb" }
+        expect(feat_b.revision).to eq("octopus1")
 
-      main_record = result.find { |r| r.entity == "file0.rb" }
-      expect(main_record.revision).to eq("main1")
+        main_record = result.find { |r| r.entity == "file0.rb" }
+        expect(main_record.revision).to eq("main1")
+      end
     end
 
     it "skips grouping when mainline parent is not in the commit set" do

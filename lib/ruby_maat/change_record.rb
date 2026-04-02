@@ -30,7 +30,8 @@ module RubyMaat
         revision: revision,
         message: message,
         loc_added: loc_added,
-        loc_deleted: loc_deleted
+        loc_deleted: loc_deleted,
+        parent_revisions: parent_revisions
       }
     end
 

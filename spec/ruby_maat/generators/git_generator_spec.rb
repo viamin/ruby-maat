@@ -96,6 +96,25 @@ RSpec.describe RubyMaat::Generators::GitGenerator do
       end
     end
 
+    context "with git2-parents format" do
+      it "builds correct git2-parents command with parent hashes" do
+        expected_command = "git log --all --numstat --date=short --pretty=format:'--%h--%p--%ad--%aN--%s' --no-renames"
+        allow(generator).to receive(:execute_command).with(expected_command)
+
+        generator.generate_log(nil, format: "git2-parents", all_branches: true, no_renames: true)
+        expect(generator).to have_received(:execute_command).with(expected_command)
+      end
+    end
+
+    context "with pr-coupling preset" do
+      it "uses git2-parents format" do
+        presets = generator.available_presets
+        pr_preset = presets["pr-coupling"]
+
+        expect(pr_preset[:options][:format]).to eq("git2-parents")
+      end
+    end
+
     context "with date filtering" do
       it "includes date filters in command" do
         expected_command = "git log --all --numstat --date=short --pretty=format:'--%h--%ad--%aN--%s' --no-renames --after=2023-01-01 --before=2023-12-31"
