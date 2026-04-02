@@ -461,6 +461,16 @@ module RubyMaat
 
       raise ArgumentError, "Missing required options: #{missing.join(", ")}" unless missing.empty?
 
+      # Validate --detect-merges is only used with git-based VCS.
+      # The option parser auto-switches nil/"git" to "git2", but if the user
+      # explicitly specifies a non-git VCS after --detect-merges (e.g., -c svn),
+      # that override wins and we end up with an inconsistent state.
+      if @options[:detect_merges] && @options[:version_control] &&
+          !@options[:version_control].start_with?("git")
+        raise ArgumentError,
+          "--detect-merges is only supported with git/git2, not '#{@options[:version_control]}'"
+      end
+
       # Set defaults
       @options[:analysis] ||= "authors"
       @options[:min_revs] ||= 5
