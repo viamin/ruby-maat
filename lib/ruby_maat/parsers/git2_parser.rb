@@ -30,9 +30,9 @@ module RubyMaat
       # Without the sentinel, a standard-format subject starting with hex-like tokens and
       # containing a tab (e.g. "deadbeef\tsome text") could be misparsed as enhanced format.
       # Parents field uses * (zero or more) to handle root commits which have no parents.
-      COMMIT_WITH_PARENTS = /^--([a-z0-9]+)--(\d{4}-\d{2}-\d{2})--([^-\r\n]+?)--PARENTS:([a-f0-9 ]*)\t([^\r\n]*)$/
+      COMMIT_WITH_PARENTS = /^--([a-z0-9]+)--(\d{4}-\d{2}-\d{2})--(.+?)--PARENTS:([a-f0-9 ]*)\t([^\r\n]*)$/
       # Standard format: hash--date--author--message
-      COMMIT_SEPARATOR = /^--([a-z0-9]+)--(\d{4}-\d{2}-\d{2})--([^-\r\n]+?)--([^\r\n]*)$/
+      COMMIT_SEPARATOR = /^--([a-z0-9]+)--(\d{4}-\d{2}-\d{2})--(.+?)--([^\r\n]*)$/
       CHANGE_PATTERN = /^(-|\d+)[\t ]{1,10}(-|\d+)[\t ]{1,10}([^\r\n]*)$/
 
       protected

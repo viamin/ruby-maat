@@ -194,6 +194,40 @@ RSpec.describe RubyMaat::Parsers::Git2Parser do
       end
     end
 
+    context "with hyphenated author names" do
+      let(:log_with_hyphenated_authors) do
+        "--abc123--2023-01-15--Jean-Paul Sartre--Add existentialism module\n" \
+        "10      5       src/main.rb\n" \
+        "\n" \
+        "--def456--2023-01-14--Mary-Jane Watson--PARENTS:aaa111 bbb222\tMerge pull request #99\n" \
+        "15      3       src/helper.rb\n"
+      end
+
+      let(:temp_file) do
+        file = Tempfile.new(["git2_hyphen_log", ".log"])
+        file.write(log_with_hyphenated_authors)
+        file.close
+        file
+      end
+
+      after { temp_file.unlink }
+
+      it "correctly parses hyphenated author names in both formats" do
+        parser = described_class.new(temp_file.path)
+        records = parser.parse
+
+        standard_record = records.find { |r| r.revision == "abc123" }
+        expect(standard_record).not_to be_nil
+        expect(standard_record.author).to eq("Jean-Paul Sartre")
+        expect(standard_record.merge_commit).to be false
+
+        enhanced_record = records.find { |r| r.revision == "def456" }
+        expect(enhanced_record).not_to be_nil
+        expect(enhanced_record.author).to eq("Mary-Jane Watson")
+        expect(enhanced_record.merge_commit).to be true
+      end
+    end
+
     context "with various merge message patterns" do
       def parse_single_commit(message)
         log = "--abc123--2023-01-15--John Doe--#{message}\n10\t5\tsrc/main.rb\n"

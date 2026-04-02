@@ -56,6 +56,14 @@ module RubyMaat
       if @options[:analysis] == "merge-coupling" && @options[:version_control]&.start_with?("git")
         @options[:detect_merges] = true
         @options[:version_control] = "git2"
+
+        # Ensure the log generator format is compatible with git2-based merge detection.
+        if @options[:format].nil?
+          @options[:format] = "git2"
+        elsif @options[:format] != "git2"
+          raise ArgumentError,
+            "Git log format '#{@options[:format]}' is incompatible with merge-coupling analysis; use 'git2'."
+        end
       end
 
       if @options[:interactive]
@@ -112,9 +120,10 @@ module RubyMaat
       # Parent-hash detection (git2) is the most accurate merge detection method,
       # so we override any legacy "git" selection to use git2 and prevent format
       # mismatch between the generator output and the parser.
-      if analysis_type == "merge-coupling" && vcs_type.start_with?("git")
+      if (analysis_type == "merge-coupling" || @options[:detect_merges]) && vcs_type.start_with?("git")
         @options[:detect_merges] = true
         vcs_type = "git2"
+        @options[:format] = "git2"
       end
 
       # Step 3: Generate log and run analysis
@@ -369,6 +378,8 @@ module RubyMaat
           if @options[:version_control].nil? || @options[:version_control] == "git"
             @options[:version_control] = "git2"
           end
+          # Ensure log format is git2 to match the merge-detection output
+          @options[:format] = "git2"
         end
 
         # Analysis-specific options
