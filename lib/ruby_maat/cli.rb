@@ -51,7 +51,8 @@ module RubyMaat
 
     def handle_log_generation
       # Auto-enable merge detection and force git2 for merge-coupling with any git format.
-      # merge-coupling requires parent-hash detection which only git2 supports.
+      # Parent-hash detection (git2) is the most reliable merge detection method;
+      # message-based detection also works but may miss non-standard merge messages.
       if @options[:analysis] == "merge-coupling" && @options[:version_control]&.start_with?("git")
         @options[:detect_merges] = true
         @options[:version_control] = "git2"
@@ -108,9 +109,9 @@ module RubyMaat
       analysis_type = @options[:analysis] || choose_analysis_interactive
 
       # Auto-enable merge detection and force git2 format for merge-coupling.
-      # merge-coupling requires parent-hash detection which only git2 supports,
-      # so we must override any legacy "git" selection to prevent format mismatch
-      # between the generator output and the parser.
+      # Parent-hash detection (git2) is the most accurate merge detection method,
+      # so we override any legacy "git" selection to use git2 and prevent format
+      # mismatch between the generator output and the parser.
       if analysis_type == "merge-coupling" && vcs_type.start_with?("git")
         @options[:detect_merges] = true
         vcs_type = "git2"
