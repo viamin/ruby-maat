@@ -4,9 +4,9 @@ require_relative "ruby_maat/version"
 require_relative "ruby_maat/change_record"
 require_relative "ruby_maat/dataset"
 
-# Set is part of Ruby core since 3.2, so no explicit require is needed.
-# Earlier Ruby versions pulled it in transitively via gems, but this project
-# requires Ruby 3.3+ where Set is always available without require.
+# Set became a core class in Ruby 3.2 (autoloaded, no require needed).
+# The gemspec requires Ruby >= 3.2.0, so Set is always available.
+# Adding `require "set"` would trigger Lint/RedundantRequireStatement.
 
 # Core parsers
 require_relative "ruby_maat/parsers/base_parser"
