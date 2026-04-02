@@ -174,5 +174,51 @@ RSpec.describe RubyMaat::Parsers::Git2Parser do
         expect(merge_record.loc_deleted).to eq(2)
       end
     end
+
+    context "with hyphenated author names" do
+      it "parses authors containing hyphens in standard format" do
+        log = <<~LOG
+          --abc123--2023-03-01--Jean-Pierre Dupont--Fix encoding issue
+          4       1       lib/encoding.rb
+        LOG
+
+        file = Tempfile.new(["git2_hyphen", ".log"])
+        file.write(log)
+        file.close
+
+        begin
+          parser = described_class.new(file.path)
+          records = parser.parse
+
+          expect(records.size).to eq(1)
+          expect(records[0].author).to eq("Jean-Pierre Dupont")
+          expect(records[0].revision).to eq("abc123")
+        ensure
+          file.unlink
+        end
+      end
+
+      it "parses authors containing hyphens in parent hash format" do
+        log = <<~LOG
+          --abc123--def456 ghi789--2023-03-01--Jean-Pierre Dupont--Merge feature branch
+          4       1       lib/encoding.rb
+        LOG
+
+        file = Tempfile.new(["git2_hyphen_parents", ".log"])
+        file.write(log)
+        file.close
+
+        begin
+          parser = described_class.new(file.path)
+          records = parser.parse
+
+          expect(records.size).to eq(1)
+          expect(records[0].author).to eq("Jean-Pierre Dupont")
+          expect(records[0].parent_revisions).to eq(%w[def456 ghi789])
+        ensure
+          file.unlink
+        end
+      end
+    end
   end
 end

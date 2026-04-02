@@ -16,9 +16,9 @@ module RubyMaat
     # 10      5       lib/example.rb
     class Git2Parser < BaseParser
       # Format with parent hashes: --hash--parent1 parent2--date--author--message
-      COMMIT_WITH_PARENTS = /^--([a-z0-9]+)--([a-z0-9 ]*)--(\d{4}-\d{2}-\d{2})--([^-\r\n]+?)--([^\r\n]*)$/
+      COMMIT_WITH_PARENTS = /^--([a-z0-9]+)--([a-z0-9 ]*)--(\d{4}-\d{2}-\d{2})--([^\r\n]+?)--([^\r\n]*)$/
       # Standard format: --hash--date--author--message
-      COMMIT_SEPARATOR = /^--([a-z0-9]+)--(\d{4}-\d{2}-\d{2})--([^-\r\n]+?)--([^\r\n]*)$/
+      COMMIT_SEPARATOR = /^--([a-z0-9]+)--(\d{4}-\d{2}-\d{2})--([^\r\n]+?)--([^\r\n]*)$/
       CHANGE_PATTERN = /^(-|\d+)[\t ]{1,10}(-|\d+)[\t ]{1,10}([^\r\n]*)$/
 
       protected
