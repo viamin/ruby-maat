@@ -35,5 +35,5 @@ Gem::Specification.new do |spec|
   # Runtime dependencies
   spec.add_dependency "csv", "~> 3.2"
   spec.add_dependency "rexml", "~> 3.2"
-  spec.add_dependency "rover-df", "~> 0.3"
+  spec.add_dependency "rover-df", ">= 0.3", "< 2.0"
 end
