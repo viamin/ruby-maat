@@ -362,6 +362,12 @@ module RubyMaat
           raise ArgumentError, "Invalid date format for --age-time-now: #{date_str}. Use YYYY-MM-dd format."
         end
 
+        opts.on("--group-by-merge",
+          "Group commits by merge commit for PR-level coupling analysis. " \
+          "Requires log generated with parent hashes (use --preset pr-coupling).") do
+          @options[:group_by_merge] = true
+        end
+
         opts.on("--verbose-results",
           "Includes additional analysis details together with the results. Only implemented for change coupling.") do
           @options[:verbose_results] = true

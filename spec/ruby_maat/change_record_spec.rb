@@ -88,7 +88,8 @@ RSpec.describe RubyMaat::ChangeRecord do
         revision: "abc123",
         message: "Fix bug",
         loc_added: 10,
-        loc_deleted: 5
+        loc_deleted: 5,
+        parent_revisions: nil
       })
     end
   end
