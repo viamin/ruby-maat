@@ -49,20 +49,19 @@ module RubyMaat
         messages = records.filter_map(&:message).uniq
         combined_message = messages.join("; ")
 
-        # Use first revision as representative (could be improved)
-        revision = first_record.revision
-
-        # Use first author (could be improved to handle multiple authors)
-        author = first_record.author
+        # Prefer a merge commit as the representative record so that
+        # revision and merge_commit stay internally consistent.
+        representative = records.find { |r| r.merge_commit } || first_record
 
         ChangeRecord.new(
           entity: entity,
-          author: author,
+          author: representative.author,
           date: date,
-          revision: revision,
+          revision: representative.revision,
           message: combined_message,
           loc_added: total_added,
-          loc_deleted: total_deleted
+          loc_deleted: total_deleted,
+          merge_commit: representative.merge_commit
         )
       end
     end

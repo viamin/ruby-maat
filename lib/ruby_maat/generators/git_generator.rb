@@ -99,6 +99,12 @@ module RubyMaat
         options[:no_renames] = ask_yes_no("Disable rename detection? (recommended for performance)",
           options.fetch(:no_renames, true))
 
+        # Merge detection (git2 format only)
+        if options[:format] == "git2"
+          options[:detect_merges] = ask_yes_no("Include parent hashes for merge commit detection?",
+            options.fetch(:detect_merges, false))
+        end
+
         # Author filtering
         author = ask_string("Filter by author (empty for all)")
         options[:author] = author unless author.empty?
@@ -119,7 +125,16 @@ module RubyMaat
         parts << "--all" if options[:all_branches]
         parts << "--numstat"
         parts << "--date=short"
-        parts << "--pretty=format:'--%h--%ad--%aN--%s'"
+
+        # Use enhanced format with parent hashes for merge commit detection.
+        # "PARENTS:" sentinel + %x09 (tab) make the format unambiguous vs standard format.
+        pretty_format = if options[:detect_merges]
+          "--pretty=format:'--%h--%ad--%aN--PARENTS:%p%x09%s'"
+        else
+          "--pretty=format:'--%h--%ad--%aN--%s'"
+        end
+        parts << pretty_format
+
         parts << "--no-renames" if options[:no_renames]
 
         # Date filtering (with validation and shell escaping)

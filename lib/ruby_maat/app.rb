@@ -12,6 +12,7 @@ module RubyMaat
       "authors" => RubyMaat::Analysis::Authors,
       "revisions" => RubyMaat::Analysis::Entities,
       "coupling" => RubyMaat::Analysis::LogicalCoupling,
+      "merge-coupling" => RubyMaat::Analysis::MergeCoupling,
       "soc" => RubyMaat::Analysis::SumOfCoupling,
       "summary" => RubyMaat::Analysis::Summary,
       "identity" => RubyMaat::Analysis::Identity,
@@ -39,6 +40,8 @@ module RubyMaat
     end
 
     def run
+      validate_analysis_compatibility!
+
       # Parse VCS log file
       parser = create_parser
       change_records = parser.parse
@@ -75,6 +78,15 @@ module RubyMaat
       return if SUPPORTED_ANALYSES.key?(@options[:analysis] || "authors")
 
       raise ArgumentError, "Invalid analysis: #{@options[:analysis]}. Supported: #{self.class.analysis_names}"
+    end
+
+    def validate_analysis_compatibility!
+      analysis_name = @options[:analysis] || "authors"
+      return unless analysis_name == "merge-coupling" && @options[:temporal_period]
+
+      raise ArgumentError,
+        "merge-coupling analysis is incompatible with --temporal-period. " \
+        "Temporal grouping reorders and aggregates commits, making merge-boundary segmentation unreliable."
     end
 
     def create_parser

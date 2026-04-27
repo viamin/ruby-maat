@@ -14,6 +14,8 @@ module RubyMaat
     # [abc123] Jane Doe 2015-06-16 Fix bug in parser
     # 10      5       lib/example.rb
     class GitParser < BaseParser
+      include MergeDetection
+
       COMMIT_PATTERN = /^\[([a-f0-9]+)\] ([^0-9][^\t]*?) (\d{4}-\d{2}-\d{2}) ([^\r\n]*)$/
       CHANGE_PATTERN = /^(\d+|-)\t(\d+|-)\t([^\r\n]+)$/
 
@@ -30,12 +32,13 @@ module RubyMaat
           next if line.strip.empty?
 
           if (commit_match = line.match(COMMIT_PATTERN))
-            # New commit header
+            message = commit_match[4].strip
             current_commit = {
               revision: commit_match[1],
               author: commit_match[2].strip,
               date: parse_date(commit_match[3]),
-              message: commit_match[4].strip
+              message: message,
+              merge_commit: merge_message?(message)
             }
           elsif current_commit && (change_match = line.match(CHANGE_PATTERN))
             # File change line
@@ -53,7 +56,8 @@ module RubyMaat
               revision: current_commit[:revision],
               message: current_commit[:message],
               loc_added: added,
-              loc_deleted: deleted
+              loc_deleted: deleted,
+              merge_commit: current_commit[:merge_commit]
             )
           end
           # Ignore unrecognized lines

@@ -50,6 +50,22 @@ module RubyMaat
     private
 
     def handle_log_generation
+      # Auto-enable merge detection and force git2 for merge-coupling with any git format.
+      # Parent-hash detection (git2) is the most reliable merge detection method;
+      # message-based detection also works but may miss non-standard merge messages.
+      if @options[:analysis] == "merge-coupling" && @options[:version_control]&.start_with?("git")
+        @options[:detect_merges] = true
+        @options[:version_control] = "git2"
+
+        # Ensure the log generator format is compatible with git2-based merge detection.
+        if @options[:format].nil?
+          @options[:format] = "git2"
+        elsif @options[:format] != "git2"
+          raise ArgumentError,
+            "Git log format '#{@options[:format]}' is incompatible with merge-coupling analysis; use 'git2'."
+        end
+      end
+
       if @options[:interactive]
         handle_interactive_mode
       else
@@ -99,6 +115,16 @@ module RubyMaat
 
       # Step 2: Choose analysis type
       analysis_type = @options[:analysis] || choose_analysis_interactive
+
+      # Auto-enable merge detection and force git2 format for merge-coupling.
+      # Parent-hash detection (git2) is the most accurate merge detection method,
+      # so we override any legacy "git" selection to use git2 and prevent format
+      # mismatch between the generator output and the parser.
+      if (analysis_type == "merge-coupling" || @options[:detect_merges]) && vcs_type.start_with?("git")
+        @options[:detect_merges] = true
+        vcs_type = "git2"
+        @options[:format] = "git2"
+      end
 
       # Step 3: Generate log and run analysis
       generator = create_log_generator_for_vcs(vcs_type)
@@ -344,6 +370,18 @@ module RubyMaat
           @options[:preset] = preset
         end
 
+        opts.on("--detect-merges",
+          "Include parent hashes in generated log for merge commit detection (git2 format only)") do
+          @options[:detect_merges] = true
+          # Auto-switch to git2 since detect-merges generates git2-format logs
+          # with parent hashes. Using legacy "git" parser would fail to parse them.
+          if @options[:version_control].nil? || @options[:version_control] == "git"
+            @options[:version_control] = "git2"
+          end
+          # Ensure log format is git2 to match the merge-detection output
+          @options[:format] = "git2"
+        end
+
         # Analysis-specific options
         opts.on("-e", "--expression-to-match MATCH_EXPRESSION",
           "A regex to match against commit messages. Used with -messages analyses") do |expression|
@@ -422,6 +460,16 @@ module RubyMaat
       end
 
       raise ArgumentError, "Missing required options: #{missing.join(", ")}" unless missing.empty?
+
+      # Validate --detect-merges is only used with git-based VCS.
+      # The option parser auto-switches nil/"git" to "git2", but if the user
+      # explicitly specifies a non-git VCS after --detect-merges (e.g., -c svn),
+      # that override wins and we end up with an inconsistent state.
+      if @options[:detect_merges] && @options[:version_control] &&
+          !@options[:version_control].start_with?("git")
+        raise ArgumentError,
+          "--detect-merges is only supported with git/git2, not '#{@options[:version_control]}'"
+      end
 
       # Set defaults
       @options[:analysis] ||= "authors"
