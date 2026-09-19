@@ -17,6 +17,7 @@ require_relative "ruby_maat/parsers/tfs_parser"
 require_relative "ruby_maat/groupers/layer_grouper"
 require_relative "ruby_maat/groupers/time_grouper"
 require_relative "ruby_maat/groupers/team_mapper"
+require_relative "ruby_maat/groupers/merge_commit_grouper"
 
 # Analysis modules (load before app.rb since app references them)
 require_relative "ruby_maat/analysis/base_analysis"
