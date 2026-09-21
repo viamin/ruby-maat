@@ -18,6 +18,9 @@ module RubyMaat
       @parent_revisions = parent_revisions
     end
 
+    # True when the commit has multiple parents (i.e., a merge commit).
+    # Returns false when parent metadata is unavailable (nil), since the parser
+    # could not determine the parent count.
     def merge_commit?
       parent_revisions.is_a?(Array) && parent_revisions.size >= 2
     end

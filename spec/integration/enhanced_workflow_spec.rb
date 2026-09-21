@@ -4,8 +4,23 @@ require "spec_helper"
 require "ruby_maat/cli"
 require "tmpdir"
 require "stringio"
+require "open3"
 
 RSpec.describe RubyMaat::CLI, "Enhanced Ruby Maat Workflow", type: :integration do
+  # Run git with explicit author/committer identity. The host environment may
+  # set GIT_AUTHOR_* / GIT_COMMITTER_* env vars, which take precedence over
+  # `-c user.name=...` and would otherwise produce a single author for every
+  # commit. Setting them here keeps the test self-contained.
+  def git(*args, name:, email:)
+    env = {
+      "GIT_AUTHOR_NAME" => name,
+      "GIT_AUTHOR_EMAIL" => email,
+      "GIT_COMMITTER_NAME" => name,
+      "GIT_COMMITTER_EMAIL" => email
+    }
+    Open3.capture3(env, "git", *args).first
+  end
+
   def setup_directories
     # Ensure we're in a valid directory before starting
     begin
@@ -32,19 +47,19 @@ RSpec.describe RubyMaat::CLI, "Enhanced Ruby Maat Workflow", type: :integration 
       File.write("test/main_test.rb", "require 'main'")
 
       `git add . 2>/dev/null`
-      `git -c user.name="Alice" -c user.email="alice@example.com" commit -m "Initial commit" 2>/dev/null`
+      git("commit", "-m", "Initial commit", name: "Alice", email: "alice@example.com")
 
       # Modify files to create coupling
       File.write("src/main.rb", "class Main\n  include Helper\nend")
       File.write("src/helper.rb", "module Helper\n  def help\n  end\nend")
 
       `git add . 2>/dev/null`
-      `git -c user.name="Bob" -c user.email="bob@example.com" commit -m "Add helper functionality" 2>/dev/null`
+      git("commit", "-m", "Add helper functionality", name: "Bob", email: "bob@example.com")
 
       # Create more changes
       File.write("src/util.rb", "class Util\nend")
       `git add . 2>/dev/null`
-      `git -c user.name="Alice" -c user.email="alice@example.com" commit -m "Add utility class" 2>/dev/null`
+      git("commit", "-m", "Add utility class", name: "Alice", email: "alice@example.com")
     end
 
     Dir.chdir(@temp_dir)
