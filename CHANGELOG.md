@@ -5,6 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0](https://github.com/viamin/ruby-maat/compare/v1.3.4...v1.4.0) (2026-09-19)
+
+
+### Features
+
+* identify merge commits to link commits to PRs for coupling analysis ([#37](https://github.com/viamin/ruby-maat/issues/37)) ([ee16386](https://github.com/viamin/ruby-maat/commit/ee16386459d589886525d5d3b4ee7da2bef144cc))
+
+
+### Bug Fixes
+
+* 37: Can we identify merge commits to link commits to PRs? ([#45](https://github.com/viamin/ruby-maat/issues/45)) ([6d57c5d](https://github.com/viamin/ruby-maat/commit/6d57c5d91bcc4f5dc6b4bb539021db327af1712d))
+* address remaining review comments on merge commit grouper ([69d62a4](https://github.com/viamin/ruby-maat/commit/69d62a47205d5426d5a948ad25ac8c79fa2e9554))
+* address remaining review comments on PR [#45](https://github.com/viamin/ruby-maat/issues/45) ([09f4279](https://github.com/viamin/ruby-maat/commit/09f4279bbd486ff470af3842cd2b7a0f422e1947))
+* address review comments on MergeCommitGrouper ([15be4b5](https://github.com/viamin/ruby-maat/commit/15be4b54a728c4d06ff08fffedf92d0f4d257e2c))
+* allow hyphens in author names in Git2Parser regexes ([dac123f](https://github.com/viamin/ruby-maat/commit/dac123f124cb5f82d3891427377d090f67fa668a))
+* check for nil instead of empty parent_revisions in --group-by-merge validation ([a2c1b98](https://github.com/viamin/ruby-maat/commit/a2c1b9808d54132e5abe58ac854b3ef03879590c))
+* clarify Set require comment to address review feedback ([4996924](https://github.com/viamin/ruby-maat/commit/4996924c3877ae698a3920253a39d1262402fbcb))
+* improve MergeCommitGrouper correctness and performance ([cd6b500](https://github.com/viamin/ruby-maat/commit/cd6b500c413e32ee7b870be1a98faa08d0742a28))
+* reject mixed-format logs in --group-by-merge validation ([21004c3](https://github.com/viamin/ruby-maat/commit/21004c31e8daa69d0876648bf3a2409f12a8248f))
+* rewrite feature-branch dates to merge commit date for consistency ([a6a4cfc](https://github.com/viamin/ruby-maat/commit/a6a4cfcd417e99a58caf96376b9b6ab81a3ce9df))
+* validate parent metadata for --group-by-merge and optimize octopus merge graph walks ([28742c0](https://github.com/viamin/ruby-maat/commit/28742c00443cb78cdbd02e9127d8db3d0089f0c4))
+
 ## [1.3.4](https://github.com/viamin/ruby-maat/compare/v1.3.3...v1.3.4) (2025-09-08)
 
 
