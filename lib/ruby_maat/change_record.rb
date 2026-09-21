@@ -4,10 +4,10 @@ module RubyMaat
   # Represents a single change/modification record from VCS
   # This is the fundamental data structure that flows through the entire pipeline
   class ChangeRecord
-    attr_reader :entity, :author, :date, :revision, :message, :loc_added, :loc_deleted, :merge_commit
+    attr_reader :entity, :author, :date, :revision, :message, :loc_added, :loc_deleted, :parent_revisions
 
     def initialize(entity:, author:, date:, revision:, message: nil, loc_added: nil, loc_deleted: nil,
-      merge_commit: nil)
+      parent_revisions: nil)
       @entity = entity
       @author = author
       @date = date.is_a?(Date) ? date : Date.parse(date)
@@ -15,7 +15,14 @@ module RubyMaat
       @message = message
       @loc_added = loc_added.to_i if loc_added && (!loc_added.is_a?(Float) || !loc_added.nan?)
       @loc_deleted = loc_deleted.to_i if loc_deleted && (!loc_deleted.is_a?(Float) || !loc_deleted.nan?)
-      @merge_commit = normalize_merge_commit(merge_commit)
+      @parent_revisions = parent_revisions
+    end
+
+    # True when the commit has multiple parents (i.e., a merge commit).
+    # Returns false when parent metadata is unavailable (nil), since the parser
+    # could not determine the parent count.
+    def merge_commit?
+      parent_revisions.is_a?(Array) && parent_revisions.size >= 2
     end
 
     def to_h
@@ -27,7 +34,7 @@ module RubyMaat
         message: message,
         loc_added: loc_added,
         loc_deleted: loc_deleted,
-        merge_commit: merge_commit
+        parent_revisions: parent_revisions
       }
     end
 
@@ -45,17 +52,6 @@ module RubyMaat
 
     def eql?(other)
       self == other
-    end
-
-    private
-
-    # Normalize merge_commit to boolean or nil so that values round-tripped
-    # through Rover DataFrames (which may represent booleans as 1/0) are
-    # consistently truthy/falsy in Ruby (where 0 is truthy).
-    def normalize_merge_commit(value)
-      return nil if value.nil?
-
-      value == true || value == 1
     end
   end
 end

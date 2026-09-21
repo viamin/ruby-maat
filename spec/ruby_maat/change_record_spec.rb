@@ -89,7 +89,7 @@ RSpec.describe RubyMaat::ChangeRecord do
         message: "Fix bug",
         loc_added: 10,
         loc_deleted: 5,
-        merge_commit: nil
+        parent_revisions: nil
       })
     end
   end

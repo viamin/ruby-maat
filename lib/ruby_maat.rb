@@ -4,13 +4,8 @@ require_relative "ruby_maat/version"
 require_relative "ruby_maat/change_record"
 require_relative "ruby_maat/dataset"
 
-# Set became a core class in Ruby 3.2 (autoloaded, no require needed).
-# The gemspec requires Ruby >= 3.2.0, so Set is always available.
-# Adding `require "set"` would trigger Lint/RedundantRequireStatement.
-
 # Core parsers
 require_relative "ruby_maat/parsers/base_parser"
-require_relative "ruby_maat/parsers/merge_detection"
 require_relative "ruby_maat/parsers/git_parser"
 require_relative "ruby_maat/parsers/git2_parser"
 require_relative "ruby_maat/parsers/svn_parser"
@@ -22,13 +17,13 @@ require_relative "ruby_maat/parsers/tfs_parser"
 require_relative "ruby_maat/groupers/layer_grouper"
 require_relative "ruby_maat/groupers/time_grouper"
 require_relative "ruby_maat/groupers/team_mapper"
+require_relative "ruby_maat/groupers/merge_commit_grouper"
 
 # Analysis modules (load before app.rb since app references them)
 require_relative "ruby_maat/analysis/base_analysis"
 require_relative "ruby_maat/analysis/authors"
 require_relative "ruby_maat/analysis/entities"
 require_relative "ruby_maat/analysis/logical_coupling"
-require_relative "ruby_maat/analysis/merge_coupling"
 require_relative "ruby_maat/analysis/churn"
 require_relative "ruby_maat/analysis/effort"
 require_relative "ruby_maat/analysis/communication"

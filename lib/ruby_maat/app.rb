@@ -12,7 +12,6 @@ module RubyMaat
       "authors" => RubyMaat::Analysis::Authors,
       "revisions" => RubyMaat::Analysis::Entities,
       "coupling" => RubyMaat::Analysis::LogicalCoupling,
-      "merge-coupling" => RubyMaat::Analysis::MergeCoupling,
       "soc" => RubyMaat::Analysis::SumOfCoupling,
       "summary" => RubyMaat::Analysis::Summary,
       "identity" => RubyMaat::Analysis::Identity,
@@ -40,13 +39,12 @@ module RubyMaat
     end
 
     def run
-      validate_analysis_compatibility!
-
       # Parse VCS log file
       parser = create_parser
       change_records = parser.parse
 
       # Apply data transformations
+      change_records = apply_merge_grouping(change_records)
       change_records = apply_grouping(change_records)
       change_records = apply_temporal_grouping(change_records)
       change_records = apply_team_mapping(change_records)
@@ -80,15 +78,6 @@ module RubyMaat
       raise ArgumentError, "Invalid analysis: #{@options[:analysis]}. Supported: #{self.class.analysis_names}"
     end
 
-    def validate_analysis_compatibility!
-      analysis_name = @options[:analysis] || "authors"
-      return unless analysis_name == "merge-coupling" && @options[:temporal_period]
-
-      raise ArgumentError,
-        "merge-coupling analysis is incompatible with --temporal-period. " \
-        "Temporal grouping reorders and aggregates commits, making merge-boundary segmentation unreliable."
-    end
-
     def create_parser
       case @options[:version_control]
       when "git"
@@ -104,6 +93,30 @@ module RubyMaat
       when "tfs"
         RubyMaat::Parsers::TfsParser.new(@options[:log], @options)
       end
+    end
+
+    def apply_merge_grouping(change_records)
+      return change_records unless @options[:group_by_merge]
+      return change_records if change_records.nil? || change_records.empty?
+
+      # Check for non-nil parent_revisions (not non-empty) because root commits
+      # legitimately have parent_revisions == [] when parsed with the parents format.
+      records_with_parents = change_records.count { |record| !record.parent_revisions.nil? }
+      records_without_parents = change_records.count { |record| record.parent_revisions.nil? }
+
+      if records_with_parents.zero?
+        raise ArgumentError,
+          "--group-by-merge requires parent revision metadata in the log. " \
+          "Please regenerate the log using the 'pr-coupling' preset or another format that includes parent hashes."
+      elsif records_without_parents.positive?
+        raise ArgumentError,
+          "--group-by-merge requires parent revision metadata for all commits, " \
+          "but the provided log mixes records with and without parent hashes. " \
+          "Please regenerate the log using the 'pr-coupling' preset or another format that includes parent hashes."
+      end
+
+      grouper = RubyMaat::Groupers::MergeCommitGrouper.new
+      grouper.group(change_records)
     end
 
     def apply_grouping(change_records)
