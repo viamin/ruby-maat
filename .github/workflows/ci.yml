@@ -18,7 +18,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        # macos-latest now points at the macOS 26 image, which has been
+        # queuing test jobs for 15+ minutes before GitHub cancels them
+        # (no runner ever gets assigned). Pin to the macOS 15 image, which
+        # has stable runner capacity, until macOS 26 capacity catches up.
+        os: [ubuntu-latest, macos-15]
         ruby: ['3.2', '3.3', '3.4']
         exclude:
           # numo-narray, required by rover-df on Ruby 3.2, does not compile
