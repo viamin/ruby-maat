@@ -42,6 +42,9 @@ test_data.txt
 # CI/CD artifacts
 .github-actions.yml.bak
 
+# Run-local verification evidence (never committed)
+tmp/paid-agent-verification.json
+
 # macOS
 .DS_Store
 
