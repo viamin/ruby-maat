@@ -20,6 +20,15 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest]
         ruby: ['3.2', '3.3', '3.4']
+        exclude:
+          # numo-narray, required by rover-df on Ruby 3.2, does not compile
+          # with the GCC version on ubuntu-latest (Ubuntu 26.04).
+          - os: ubuntu-latest
+            ruby: '3.2'
+        include:
+          # Keep Ruby 3.2 coverage on the supported Ubuntu 24.04 toolchain.
+          - os: ubuntu-24.04
+            ruby: '3.2'
         # Note: Windows disabled due to numo-narray native extension compilation issues
         # See: https://github.com/ruby-numo/numo-narray/issues/161
         # include:

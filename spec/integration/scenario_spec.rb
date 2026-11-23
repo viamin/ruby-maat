@@ -1,11 +1,10 @@
 # frozen_string_literal: true
 
-require "stringio"
+require "tempfile"
 
 # Integration tests that verify ruby-maat produces output compatible with code-maat
 # These tests use the same input files as the original Clojure tests
-# rubocop:disable RSpec/DescribeClass
-RSpec.describe "Integration scenarios" do
+RSpec.describe RubyMaat::CLI, "integration scenarios" do
   # Test data files from the original code-maat test suite
   let(:git2_log_file) { "./spec/fixtures/code_maat/end_to_end/simple_git2.txt" }
   let(:empty_git_file) { "./spec/fixtures/code_maat/end_to_end/empty.git" }
@@ -15,27 +14,19 @@ RSpec.describe "Integration scenarios" do
     args = ["-l", log_file, "-c", vcs, "-a", analysis]
 
     # Add common test options
-    args += ["-n", "1"] # min_revs
-    args += ["-m", "1"] # min_shared_revs
-    args += ["-i", "50"] # min_coupling
+    args += ["-n", options.fetch(:min_revs, 1).to_s]
+    args += ["-m", options.fetch(:min_shared_revs, 1).to_s]
+    args += ["-i", options.fetch(:min_coupling, 50).to_s]
 
     # Add specific options
     args += ["--verbose-results"] if options[:verbose_results]
     args += ["-r", options[:rows].to_s] if options[:rows]
 
-    # Capture output by running the CLI
-    output = StringIO.new
-    original_stdout = $stdout
-    $stdout = output
-
-    begin
-      cli = RubyMaat::CLI.new
-      cli.run(args)
-    ensure
-      $stdout = original_stdout
+    Tempfile.create do |output_file|
+      args += ["-o", output_file.path]
+      described_class.new.run(args)
+      File.read(output_file.path)
     end
-
-    output.string
   end
 
   describe "Authors analysis with Git2" do
@@ -117,26 +108,9 @@ RSpec.describe "Integration scenarios" do
     end
 
     it "supports threshold parameters" do
-      # Test with stricter thresholds - should produce less or no output
-      args = ["-l", git2_log_file, "-c", "git2", "-a", "coupling", "-n", "5", "-m", "5", "-i", "80"]
-
-      # rubocop:disable RSpec/ExpectOutput
-      output = StringIO.new
-      original_stdout = $stdout
-      $stdout = output
-
-      begin
-        cli = RubyMaat::CLI.new
-        cli.run(args)
-      ensure
-        $stdout = original_stdout
-      end
-      # rubocop:enable RSpec/ExpectOutput
-
-      result = output.string
+      result = run_ruby_maat(git2_log_file, "git2", "coupling", min_revs: 5, min_shared_revs: 5, min_coupling: 80)
       lines = result.strip.split("\n")
       expect(lines.size).to eq(1) # Only header, no data rows due to strict thresholds
     end
   end
 end
-# rubocop:enable RSpec/DescribeClass
